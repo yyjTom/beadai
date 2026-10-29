@@ -17,9 +17,10 @@ import { StickyActionBar } from '@/components/layout/StickyActionBar';
 import { usePatternWorker } from '@/hooks/usePatternWorker';
 import { useSession } from '@/hooks/useSession';
 import { clearHistory, pushHistoryEntry, readHistory, removeHistoryEntry } from '@/lib/storage/history';
+import { takeHandoffImage } from '@/lib/storage/handoff';
 import { resolvePattern } from '@/lib/color/swap';
 import { exportPatternPdf } from '@/lib/pdf/exportPattern';
-import type { LoadedImage } from '@/lib/utils/image';
+import { loadImageDataFromUrl, type LoadedImage } from '@/lib/utils/image';
 import {
   GRID_PRESETS,
   type DenoiseLevel,
@@ -64,6 +65,30 @@ export const StudioWorkbench = () => {
   useEffect(() => {
     setHistory(readHistory());
   }, []);
+
+  // Picks up the photo used on the homepage so visitors do not upload twice.
+  useEffect(() => {
+    if (searchParams.get('source') === 'ai') return;
+
+    const handoff = takeHandoffImage();
+    if (!handoff) return;
+
+    let cancelled = false;
+    loadImageDataFromUrl(handoff)
+      .then((next) => {
+        if (cancelled) return;
+        setSource('upload');
+        setImage(next);
+        setSourceLabel('Uploaded photo');
+      })
+      .catch(() => {
+        // Fall back to an empty studio; the visitor can upload again here.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams]);
 
   useEffect(() => {
     if (!image) {

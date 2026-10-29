@@ -26,7 +26,7 @@ export const Hero = () => (
 
         <div className="mt-9 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg" variant="gradient">
-            <Link href="/studio">
+            <Link href="#try">
               <ImageDown className="h-5 w-5" />
               Upload a photo
             </Link>

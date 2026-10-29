@@ -1,4 +1,5 @@
 import { Hero } from '@/components/marketing/Hero';
+import { InstantPreview } from '@/components/marketing/InstantPreview';
 import { PainPoints } from '@/components/marketing/PainPoints';
 import { HowItWorks } from '@/components/marketing/HowItWorks';
 import { AIShowcase } from '@/components/marketing/AIShowcase';
@@ -44,6 +45,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <InstantPreview />
       <PainPoints />
       <HowItWorks />
       <AIShowcase />
