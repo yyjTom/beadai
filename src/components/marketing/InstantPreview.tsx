@@ -35,6 +35,7 @@ const BRAND_OPTIONS: Array<{ value: PaletteBrand; label: string }> = [
 const SAMPLE_IMAGES = [
   { src: '/samples/cat.png', label: 'Cat' },
   { src: '/samples/mushroom.png', label: 'Mushroom' },
+  { src: '/samples/watermelon.png', label: 'Watermelon' },
 ] as const;
 
 export const InstantPreview = () => {
