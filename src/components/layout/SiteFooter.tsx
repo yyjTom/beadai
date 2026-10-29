@@ -68,9 +68,22 @@ export const SiteFooter = () => (
         </div>
       </div>
 
-      <div className="mt-12 flex flex-col gap-3 border-t border-black/5 pt-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
-        <p>© {new Date().getFullYear()} beadai.app — made for bead sprites and pixel makers.</p>
-        <p>Patterns are generated in your browser. Projects stay on this device.</p>
+      <div className="mt-12 flex flex-col gap-4 border-t border-black/5 pt-6 text-xs text-ink-muted sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p>© {new Date().getFullYear()} beadai.app — made for bead sprites and pixel makers.</p>
+          <p className="mt-1">Patterns are generated in your browser. Projects stay on this device.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link href="/privacy" className="transition hover:text-bead-violet">
+            Privacy
+          </Link>
+          <Link href="/terms" className="transition hover:text-bead-violet">
+            Terms
+          </Link>
+          <Link href="/faq" className="transition hover:text-bead-violet">
+            FAQ
+          </Link>
+        </div>
       </div>
     </div>
   </footer>
