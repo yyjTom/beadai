@@ -10,5 +10,7 @@ build/
 next-env.d.ts
 .vercel
 .codebuddy/
+# Local scratch script that embedded a real Together API key.
+testtogether.py
 npm-debug.log*
 yarn-error.log*
