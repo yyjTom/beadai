@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { requestMagicLink } from '@/lib/auth/magicLink';
 import { clientIpHash, userAgentHash } from '@/lib/auth/session';
 import { rateLimit } from '@/lib/quota/rateLimit';
-import { isLocalRequestHost } from '@/lib/env';
+import { env, isLocalRequestHost } from '@/lib/env';
 import { isEmailConfigured } from '@/lib/email/resend';
 import { hashForLog } from '@/lib/utils/crypto';
 
@@ -10,6 +11,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const MAX_ATTEMPTS_PER_HOUR = 5;
+
+const bodySchema = z.object({ email: z.string().trim() }).default({ email: '' });
 
 const generic = (retryAfterSeconds = 0) =>
   NextResponse.json(
@@ -22,11 +25,13 @@ const generic = (retryAfterSeconds = 0) =>
   );
 
 export const POST = async (request: Request) => {
-  const body = (await request.json().catch(() => ({}))) as { email?: string };
-  const email = (body.email ?? '').trim();
+  const parsed = bodySchema.safeParse(await request.json().catch(() => null));
+  const email = parsed.success ? parsed.data.email : '';
   const ipHash = clientIpHash(request);
   const requestHost = request.headers.get('host');
-  const allowDevEcho = isLocalRequestHost(requestHost) && !isEmailConfigured();
+  // A link must never be echoed back in production, even if the host header lies.
+  const allowDevEcho =
+    env.nodeEnv !== 'production' && isLocalRequestHost(requestHost) && !isEmailConfigured();
 
   if (!email) {
     return NextResponse.json(

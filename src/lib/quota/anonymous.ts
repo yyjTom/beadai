@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
+import { readAnonId } from '@/lib/auth/session';
 import { env } from '@/lib/env';
-import { hashForLog, randomToken } from '@/lib/utils/crypto';
+import { hashForLog } from '@/lib/utils/crypto';
 
 export const ANON_COOKIE = 'beadai_anon';
 
@@ -14,12 +15,13 @@ export const ipKey = (request: Request): string | null => {
   return hash ? `ip:${hash}` : null;
 };
 
+/**
+ * Reads the signed anonymous id. The signature is checked here on purpose:
+ * trusting the raw cookie would let anyone mint a fresh quota identity.
+ */
 export const anonKey = async (): Promise<string | null> => {
-  const store = await cookies();
-  const value = store.get(ANON_COOKIE)?.value?.split('.')[0];
+  const value = await readAnonId();
   return value ? `anon:${value}` : null;
 };
-
-export const newAnonId = (): string => randomToken(18);
 
 export const guestDailyLimit = (): number => env.guestDailyAiLimit;

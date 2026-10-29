@@ -146,6 +146,11 @@ describe('plan registry', () => {
     ]);
     expect(isKnownPlan('pro-lifetime')).toBe(true);
     expect(isKnownPlan('something-else')).toBe(false);
+    // `value in DODO_PLANS` would have accepted these.
+    expect(isKnownPlan('toString')).toBe(false);
+    expect(isKnownPlan('constructor')).toBe(false);
+    expect(isKnownPlan('__proto__')).toBe(false);
+    expect(isKnownPlan('hasOwnProperty')).toBe(false);
     expect(isOneTimePlan('pro-lifetime')).toBe(true);
     expect(isOneTimePlan('single-unlock')).toBe(true);
     expect(isOneTimePlan('pro-monthly')).toBe(false);

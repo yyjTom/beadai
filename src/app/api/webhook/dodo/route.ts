@@ -48,17 +48,43 @@ const parseDate = (value?: string): Date | null => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
-const claimEvent = async (eventId: string, eventType: string): Promise<boolean> => {
+type ClaimResult = 'claimed' | 'duplicate' | 'unavailable';
+
+/**
+ * Claims the event id so a redelivery is dropped. Returns `unavailable` (not
+ * `duplicate`) when storage is down: the caller must answer 500 so Dodo retries
+ * instead of the payment being acknowledged and silently lost.
+ */
+const claimEvent = async (eventId: string, eventType: string): Promise<ClaimResult> => {
   const db = getDb();
-  if (!db) return false;
+  if (!db) return 'unavailable';
 
-  const inserted = await db
-    .insert(webhookEvents)
-    .values({ id: newId(), eventId, provider: 'dodo', eventType, receivedAt: new Date() })
-    .onConflictDoNothing()
-    .returning({ id: webhookEvents.id });
+  try {
+    const inserted = await db
+      .insert(webhookEvents)
+      .values({ id: newId(), eventId, provider: 'dodo', eventType, receivedAt: new Date() })
+      .onConflictDoNothing()
+      .returning({ id: webhookEvents.id });
 
-  return inserted.length > 0;
+    return inserted.length > 0 ? 'claimed' : 'duplicate';
+  } catch (error) {
+    console.error('[dodo-webhook] could not claim event', error);
+    return 'unavailable';
+  }
+};
+
+/** Frees the claim after a failed write so the next redelivery actually replays it. */
+const releaseEvent = async (eventId: string): Promise<void> => {
+  const db = getDb();
+  if (!db) return;
+
+  try {
+    await db
+      .delete(webhookEvents)
+      .where(and(eq(webhookEvents.provider, 'dodo'), eq(webhookEvents.eventId, eventId)));
+  } catch (error) {
+    console.error('[dodo-webhook] could not release event', error);
+  }
 };
 
 const markEvent = async (eventId: string, eventType: string, result: string): Promise<void> => {
@@ -193,9 +219,16 @@ export const POST = async (request: Request) => {
   const eventType = event.type ?? 'unknown';
   const eventId = webhookId ?? `${eventType}:${event.data?.payment_id ?? newId()}`;
 
-  const claimed = await claimEvent(eventId, eventType);
-  if (!claimed) {
+  const claim = await claimEvent(eventId, eventType);
+  if (claim === 'duplicate') {
     return ignore('duplicate_event');
+  }
+  if (claim === 'unavailable') {
+    // Never 200 here: Dodo would stop retrying and the payment would be lost.
+    return NextResponse.json(
+      { error: 'storage_unavailable' },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
   const userId = event.data?.metadata?.user_id;
@@ -225,7 +258,7 @@ export const POST = async (request: Request) => {
         );
       } catch (error) {
         console.error('[dodo-webhook] lifetime grant failed', error);
-        await markEvent(eventId, eventType, 'failed');
+        await releaseEvent(eventId);
         return NextResponse.json({ error: 'processing_failed' }, { status: 500 });
       }
     }
@@ -246,7 +279,7 @@ export const POST = async (request: Request) => {
         );
       } catch (error) {
         console.error('[dodo-webhook] pattern unlock failed', error);
-        await markEvent(eventId, eventType, 'failed');
+        await releaseEvent(eventId);
         return NextResponse.json({ error: 'processing_failed' }, { status: 500 });
       }
     }
@@ -273,7 +306,7 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ received: true }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('[dodo-webhook] processing failed', error);
-    await markEvent(eventId, eventType, 'failed');
+    await releaseEvent(eventId);
     return NextResponse.json(
       { error: 'processing_failed' },
       { status: 500, headers: { 'Cache-Control': 'no-store' } },

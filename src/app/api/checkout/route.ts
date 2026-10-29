@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { readSession } from '@/lib/auth/session';
 import { isKnownPlan, createCheckout, planProductId } from '@/lib/entitlement/dodo';
+import { rateLimit } from '@/lib/quota/rateLimit';
 import { env } from '@/lib/env';
 
 export const runtime = 'nodejs';
@@ -65,6 +66,23 @@ export const POST = async (request: Request) => {
         message: 'Sign in first so the subscription stays attached to your account.',
       },
       { status: 401, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
+
+  const checkoutLimit = await rateLimit({
+    action: 'checkout',
+    subject: session.userId,
+    limit: 10,
+  });
+
+  if (!checkoutLimit.allowed) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: 'rate_limited',
+        message: 'Too many checkout attempts. Try again in an hour.',
+      },
+      { status: 429, headers: { 'Cache-Control': 'no-store' } },
     );
   }
 

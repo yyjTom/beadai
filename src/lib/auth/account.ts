@@ -81,13 +81,30 @@ export const upsertVerifiedUser = async (input: {
   }
 
   const id = newId();
-  await db.insert(users).values({
-    id,
-    emailNormalized: normalized,
-    emailDisplay: input.email.trim(),
-    emailVerifiedAt: new Date(),
-    lastLoginAt: new Date(),
-  });
+  const inserted = await db
+    .insert(users)
+    .values({
+      id,
+      emailNormalized: normalized,
+      emailDisplay: input.email.trim(),
+      emailVerifiedAt: new Date(),
+      lastLoginAt: new Date(),
+    })
+    .onConflictDoNothing()
+    .returning({ id: users.id, email: users.emailDisplay });
+
+  // A concurrent sign-in can win the race; fall back to the row that landed.
+  if (inserted.length === 0) {
+    const winner = await findUserByEmail(normalized);
+    if (!winner) throw new Error('could not resolve account');
+
+    await linkIdentity({
+      userId: winner.id,
+      provider: input.provider,
+      providerSubject: input.providerSubject,
+    });
+    return winner;
+  }
 
   await linkIdentity({ userId: id, provider: input.provider, providerSubject: input.providerSubject });
 

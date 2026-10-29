@@ -30,16 +30,20 @@ export const ExportPanel = ({
 }) => {
   const [exporting, setExporting] = useState(false);
   const [exportingPng, setExportingPng] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const downloadPdf = () => {
     if (!pattern || !canExport) return;
     setExporting(true);
+    setExportError(null);
+
     try {
       exportPatternPdf(pattern, brand, {
         title: `${pattern.width} × ${pattern.height} bead pattern`,
       });
     } catch (error) {
       console.error('[export] pdf generation failed', error);
+      setExportError('We could not build the PDF. Please try again.');
     } finally {
       setExporting(false);
     }
@@ -48,10 +52,13 @@ export const ExportPanel = ({
   const downloadPng = async () => {
     if (!pattern || !canExportPng) return;
     setExportingPng(true);
+    setExportError(null);
+
     try {
       await exportPatternPng(pattern, brand);
     } catch (error) {
       console.error('[export] png generation failed', error);
+      setExportError('We could not render the PNG. Please try again.');
     } finally {
       setExportingPng(false);
     }
@@ -119,6 +126,12 @@ export const ExportPanel = ({
           </>
         )}
       </div>
+
+      {exportError ? (
+        <p className="mt-4 text-xs font-semibold text-bead-coral" role="alert">
+          {exportError}
+        </p>
+      ) : null}
 
       {!pattern ? (
         <p className="mt-4 text-xs text-ink-muted">

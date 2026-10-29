@@ -101,7 +101,8 @@ export const DODO_PLANS = {
 
 export type DodoPlanKey = keyof typeof DODO_PLANS;
 
-export const isKnownPlan = (value: string): value is DodoPlanKey => value in DODO_PLANS;
+export const isKnownPlan = (value: string): value is DodoPlanKey =>
+  Object.prototype.hasOwnProperty.call(DODO_PLANS, value);
 
 export const planProductId = (key: DodoPlanKey): string | null => DODO_PLANS[key] ?? null;
 

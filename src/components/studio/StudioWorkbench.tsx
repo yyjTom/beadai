@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { SourceSwitch, type StudioSource } from '@/components/studio/SourceSwitch';
@@ -52,6 +52,14 @@ export const StudioWorkbench = () => {
   const [denoiseLevel, setDenoiseLevel] = useState<DenoiseLevel>(1);
   const [basePattern, setBasePattern] = useState<PatternResult | null>(null);
   const [swapMap, setSwapMap] = useState<PatternSwapMap>({});
+
+  const generationRef = useRef(0);
+  const restoredRef = useRef(false);
+  const swapMapRef = useRef(swapMap);
+
+  useEffect(() => {
+    swapMapRef.current = swapMap;
+  }, [swapMap]);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<PatternHistoryEntry[]>([]);
@@ -95,9 +103,18 @@ export const StudioWorkbench = () => {
 
   useEffect(() => {
     if (!image) {
+      // A restored history entry has no image; do not wipe the pattern it just loaded.
+      if (restoredRef.current) {
+        restoredRef.current = false;
+        return;
+      }
       setBasePattern(null);
       return;
     }
+
+    // Guards against a slow earlier run landing after a newer one.
+    const requestToken = generationRef.current + 1;
+    generationRef.current = requestToken;
 
     const timer = setTimeout(() => {
       generate({
@@ -108,11 +125,13 @@ export const StudioWorkbench = () => {
         denoiseLevel,
       })
         .then((result) => {
+          if (generationRef.current !== requestToken) return;
           setBasePattern(result);
           setSwapMap({});
           setError(null);
         })
         .catch((cause: Error) => {
+          if (generationRef.current !== requestToken) return;
           setError(cause.message);
         });
     }, 220);
@@ -124,7 +143,8 @@ export const StudioWorkbench = () => {
     if (!basePattern) return;
 
     const entry: PatternHistoryEntry = {
-      id: `${basePattern.width}x${basePattern.height}-${brand}-${denoiseLevel}`,
+      // Unique per project: size/brand/denoise collide across different photos.
+      id: `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
       title: sourceLabel,
       source: source === 'ai' ? 'ai' : 'upload',
       createdAt: Date.now(),
@@ -135,12 +155,13 @@ export const StudioWorkbench = () => {
       totalBeads: basePattern.totalBeads,
       thumbnail: '',
       cells: basePattern.cells,
-      swapMap,
+      swapMap: swapMapRef.current,
       usage: basePattern.usage,
     };
 
     setHistory(pushHistoryEntry(entry));
-  }, [basePattern, brand, denoiseLevel, sourceLabel, source, swapMap]);
+    // Deliberately not keyed on swapMap: recolouring must not push a new project.
+  }, [basePattern, brand, denoiseLevel, sourceLabel, source]);
 
   const handleImage = useCallback((next: LoadedImage, label: string) => {
     setImage(next);
@@ -185,6 +206,7 @@ export const StudioWorkbench = () => {
   }, []);
 
   const restoreEntry = useCallback((entry: PatternHistoryEntry) => {
+    restoredRef.current = true;
     setWidth(entry.width);
     setHeight(entry.height);
     setBrand(entry.brand);

@@ -79,7 +79,7 @@ export const GET = async (request: Request) => {
     return NextResponse.redirect(new URL(next, request.url));
   } catch (error) {
     console.error('[google-callback] sign-in failed', error);
-    const reason = error instanceof Error ? error.message : 'server_misconfigured';
-    return fail(request, reason, next);
+    // Fixed reason only: the real message can carry tokens and upstream URLs.
+    return fail(request, 'signin_failed', next);
   }
 };

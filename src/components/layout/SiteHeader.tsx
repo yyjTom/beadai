@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut, Sparkles, UserRound } from 'lucide-react';
+import { LogOut, Menu, Sparkles, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -127,6 +127,52 @@ export const SiteHeader = () => {
           <Button asChild size="sm" variant="gradient">
             <Link href="/studio">Go to Studio</Link>
           </Button>
+
+          {/* Below md the nav collapses, so every destination lives here. */}
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Open menu"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-ink/10 bg-white text-ink shadow-soft transition focus-ring"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  {entitlement?.plan === 'pro' ? 'Pro member' : 'Free plan'}
+                  {quotaLabel() ? ` · ${quotaLabel()}` : ''}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                {NAV_LINKS.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild>
+                    <Link href={link.href}>{link.label}</Link>
+                  </DropdownMenuItem>
+                ))}
+
+                <DropdownMenuSeparator />
+
+                {session?.signedIn ? (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/account">Manage subscription</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => void signOut()}>
+                      <LogOut className="h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <DropdownMenuItem asChild>
+                    <Link href="/login">Sign in</Link>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     </header>
