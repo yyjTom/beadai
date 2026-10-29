@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { UploadDropzone } from '@/components/studio/UploadDropzone';
 import { usePatternWorker } from '@/hooks/usePatternWorker';
 import { useSession } from '@/hooks/useSession';
@@ -17,7 +19,7 @@ import {
   type PatternResult,
 } from '@/types/pattern';
 import type { PaletteBrand } from '@/types/pattern';
-import type { LoadedImage } from '@/lib/utils/image';
+import { loadImageDataFromUrl, type LoadedImage } from '@/lib/utils/image';
 import { cn } from '@/lib/utils/cn';
 
 const SIZE_OPTIONS = [
@@ -30,6 +32,11 @@ const BRAND_OPTIONS: Array<{ value: PaletteBrand; label: string }> = [
   { value: 'artkal', label: 'Artkal' },
 ];
 
+const SAMPLE_IMAGES = [
+  { src: '/samples/cat.png', label: 'Cat' },
+  { src: '/samples/mushroom.png', label: 'Mushroom' },
+] as const;
+
 export const InstantPreview = () => {
   const { generate, busy } = usePatternWorker();
   const { entitlement } = useSession();
@@ -41,6 +48,8 @@ export const InstantPreview = () => {
   const [pattern, setPattern] = useState<PatternResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [handoffReady, setHandoffReady] = useState(false);
+  const [showCodes, setShowCodes] = useState(false);
+  const [sampleLoading, setSampleLoading] = useState<string | null>(null);
 
   const maxGrid = entitlement?.maxGrid ?? FREE_MAX_GRID;
   const size = SIZE_OPTIONS[sizeIndex];
@@ -84,6 +93,23 @@ export const InstantPreview = () => {
     void cacheHandoffImage(next.sourceUrl).then(setHandoffReady);
   }, []);
 
+  const loadSample = useCallback(
+    async (src: string, label: string) => {
+      setSampleLoading(src);
+      setError(null);
+
+      try {
+        const loaded = await loadImageDataFromUrl(src);
+        handleLoaded(loaded);
+      } catch {
+        setError(`We could not load the ${label} sample. Please upload your own photo.`);
+      } finally {
+        setSampleLoading(null);
+      }
+    },
+    [handleLoaded],
+  );
+
   const reset = useCallback(() => {
     setImage(null);
     setPattern(null);
@@ -91,8 +117,51 @@ export const InstantPreview = () => {
     setHandoffReady(false);
   }, []);
 
-  const cellSize = useMemo(() => (size.width > 40 ? 11 : 17), [size.width]);
   const topColors = useMemo(() => (pattern ? pattern.usage.slice(0, 8) : []), [pattern]);
+  const codesAvailable = Boolean(pattern && pattern.width <= 40);
+  const codeFontSize = pattern ? Math.max(6, Math.round(190 / pattern.width)) : 7;
+  const boards = pattern ? estimatePegboards(pattern.width, pattern.height) : 0;
+
+  const sampleRow = (
+    <div className="mt-5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+        No photo handy? Try a sample
+      </p>
+      <div className="mt-3 flex flex-wrap gap-3">
+        {SAMPLE_IMAGES.map((sample) => (
+          <button
+            key={sample.src}
+            type="button"
+            disabled={sampleLoading !== null}
+            onClick={() => void loadSample(sample.src, sample.label)}
+            className={cn(
+              'group flex items-center gap-3 rounded-2xl border border-black/5 bg-white/80 p-2 pr-4 text-left transition focus-ring',
+              sampleLoading === sample.src
+                ? 'opacity-60'
+                : 'hover:-translate-y-0.5 hover:border-bead-violet hover:shadow-soft',
+            )}
+          >
+            <span className="relative h-12 w-12 overflow-hidden rounded-xl bg-cream-soft">
+              {sampleLoading === sample.src ? (
+                <span className="grid h-full w-full place-items-center">
+                  <Loader2 className="h-4 w-4 animate-spin text-bead-violet" />
+                </span>
+              ) : (
+                <Image
+                  src={sample.src}
+                  alt={`${sample.label} sample`}
+                  width={48}
+                  height={48}
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </span>
+            <span className="text-sm font-semibold text-ink">{sample.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <section className="container py-16" id="try">
@@ -117,6 +186,7 @@ export const InstantPreview = () => {
       <div className="mt-10 grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
         <div className="space-y-4">
           <UploadDropzone busy={busy} onLoaded={handleLoaded} />
+          {sampleRow}
 
           <div className="rounded-[2rem] border border-black/5 bg-white/90 p-5 shadow-soft">
             <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Size</p>
@@ -134,7 +204,7 @@ export const InstantPreview = () => {
                       locked
                         ? 'cursor-not-allowed border-black/5 bg-cream-soft text-ink-muted'
                         : sizeIndex === index
-                          ? 'border-bead-violet bg-white shadow-soft text-ink'
+                          ? 'border-bead-violet bg-white text-ink shadow-soft'
                           : 'border-black/5 bg-white/70 text-ink-muted hover:border-ink/20',
                     )}
                   >
@@ -182,50 +252,86 @@ export const InstantPreview = () => {
                   </p>
                   <p className="text-xs text-ink-muted">
                     {pattern
-                      ? `${estimatePegboards(pattern.width, pattern.height)} standard pegboard${
-                          estimatePegboards(pattern.width, pattern.height) > 1 ? 's' : ''
-                        }`
+                      ? `${boards} standard pegboard${boards > 1 ? 's' : ''}`
                       : 'Downsampling, matching colours, cleaning stray beads'}
                   </p>
                 </div>
-                {busy ? <Loader2 className="h-5 w-5 animate-spin text-bead-violet" /> : null}
+
+                <div className="flex items-center gap-4">
+                  <label
+                    className={cn(
+                      'flex items-center gap-2 text-xs font-semibold',
+                      codesAvailable ? 'text-ink-muted' : 'text-ink/40',
+                    )}
+                  >
+                    <Switch
+                      checked={showCodes && codesAvailable}
+                      onCheckedChange={setShowCodes}
+                      disabled={!codesAvailable}
+                    />
+                    Codes
+                  </label>
+                  {busy ? <Loader2 className="h-5 w-5 animate-spin text-bead-violet" /> : null}
+                </div>
               </div>
 
-              <div className="mt-6 flex justify-center overflow-auto rounded-3xl bg-cream-soft/70 p-5">
-                {pattern ? (
-                  <div
-                    className={busy ? 'opacity-60 transition' : 'transition'}
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: `repeat(${pattern.width}, ${cellSize}px)`,
-                      gap: '1px',
-                    }}
-                  >
-                    {pattern.cells.map((colorId, index) => {
-                      const color = findPaletteColor(brand, colorId);
-                      const isEmpty = colorId === EMPTY_CELL;
-                      const rgb = color ? color.rgb : [255, 255, 255];
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <figure className="overflow-hidden rounded-3xl bg-cream-soft/70 p-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={image.sourceUrl}
+                    alt="The photo you uploaded"
+                    className="mx-auto max-h-[320px] w-auto rounded-2xl object-contain"
+                  />
+                  <figcaption className="mt-3 text-center text-xs font-semibold text-ink-muted">
+                    Your photo
+                  </figcaption>
+                </figure>
 
-                      return (
-                        <span
-                          key={index}
-                          className="bead-dot"
-                          style={{
-                            width: cellSize,
-                            height: cellSize,
-                            background: isEmpty
-                              ? 'transparent'
-                              : `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55), transparent 46%), rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="grid h-[320px] w-full place-items-center text-sm text-ink-muted">
-                    Your mosaic appears here.
-                  </div>
-                )}
+                <div className="overflow-hidden rounded-3xl bg-cream-soft/70 p-4">
+                  {pattern ? (
+                    <div
+                      className={cn('mx-auto w-full max-w-[420px]', busy && 'opacity-60')}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${pattern.width}, minmax(0, 1fr))`,
+                        gap: '1px',
+                      }}
+                    >
+                      {pattern.cells.map((colorId, index) => {
+                        const color = findPaletteColor(brand, colorId);
+                        const isEmpty = colorId === EMPTY_CELL;
+                        const rgb = color ? color.rgb : [255, 255, 255];
+
+                        return (
+                          <span
+                            key={index}
+                            className="bead-dot flex items-center justify-center"
+                            style={{
+                              aspectRatio: '1 / 1',
+                              background: isEmpty
+                                ? 'transparent'
+                                : `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55), transparent 46%), rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
+                              fontSize: codeFontSize,
+                              fontWeight: 700,
+                              lineHeight: 1,
+                              color: 'rgba(43,42,41,0.8)',
+                            }}
+                          >
+                            {showCodes && codesAvailable && color ? color.code : null}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="grid h-[320px] w-full place-items-center text-sm text-ink-muted">
+                      Your mosaic appears here.
+                    </div>
+                  )}
+                  <p className="mt-3 text-center text-xs font-semibold text-ink-muted">
+                    Bead chart
+                  </p>
+                </div>
               </div>
 
               {topColors.length ? (
