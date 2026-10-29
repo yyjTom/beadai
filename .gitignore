@@ -15,3 +15,9 @@ testtogether.py
 npm-debug.log*
 yarn-error.log*
 .neon
+
+# Local secrets (keeps .env.example tracked)
+.env
+.env.*
+!.env.example
+
