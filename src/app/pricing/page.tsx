@@ -39,6 +39,7 @@ const PLAN_CARDS: Array<{
       'Photo uploads up to 10MB',
       'Perler & Artkal colour matching',
       'Shopping list with exact counts',
+      'PNG export for 29 × 29 boards',
       '3 AI generations per day',
     ],
     cta: { label: 'Open the studio', href: '/studio' },

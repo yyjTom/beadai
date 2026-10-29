@@ -10,6 +10,7 @@ export interface PricingRow {
 
 export const PRICING_ROWS: PricingRow[] = [
   { label: '29 × 29 patterns', free: 'Unlimited', pro: 'Unlimited', included: true },
+  { label: 'PNG export', free: 'Included', pro: 'Included', included: true },
   { label: 'Photo uploads up to 10MB', free: 'Included', pro: 'Included', included: true },
   { label: 'Perler & Artkal colour matching', free: 'Included', pro: 'Included', included: true },
   { label: 'Denoise levels', free: 'Off & Light', pro: 'All four levels', included: true },

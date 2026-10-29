@@ -21,6 +21,7 @@ import { takeHandoffImage } from '@/lib/storage/handoff';
 import { resolvePattern } from '@/lib/color/swap';
 import { hashPattern } from '@/lib/utils/patternHash';
 import { exportPatternPdf } from '@/lib/pdf/exportPattern';
+import { exportPatternPng } from '@/lib/export/exportPatternPng';
 import { loadImageDataFromUrl, type LoadedImage } from '@/lib/utils/image';
 import {
   GRID_PRESETS,
@@ -208,6 +209,13 @@ export const StudioWorkbench = () => {
     exportPatternPdf(pattern, brand, { title: `${pattern.width} × ${pattern.height} bead pattern` });
   }, [pattern, entitlement?.canExportPdf, brand, requestUpgrade]);
 
+  const canExportPng = Boolean(pattern && pattern.width <= maxGrid && pattern.height <= maxGrid);
+
+  const downloadPng = useCallback(() => {
+    if (!pattern || !canExportPng) return;
+    void exportPatternPng(pattern, brand);
+  }, [pattern, canExportPng, brand]);
+
   const currentStep = !image ? 0 : !pattern ? 1 : 2;
 
   return (
@@ -330,6 +338,7 @@ export const StudioWorkbench = () => {
             pattern={pattern}
             brand={brand}
             canExport={Boolean(entitlement?.canExportPdf)}
+            canExportPng={canExportPng}
             unlockedByPurchase={entitlement?.source === 'unlock'}
             patternHash={patternHash}
             signedIn={signedIn}
@@ -349,7 +358,9 @@ export const StudioWorkbench = () => {
       <StickyActionBar
         hasPattern={Boolean(pattern)}
         canExport={Boolean(entitlement?.canExportPdf)}
+        canExportPng={canExportPng}
         onExport={downloadPdf}
+        onExportPng={downloadPng}
         onReset={() => setSwapMap({})}
       />
     </div>

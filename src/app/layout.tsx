@@ -41,6 +41,7 @@ export const metadata: Metadata = {
     title: 'beadai — Turn any photo or idea into a fuse bead pattern',
     description:
       'Convert photos or AI-generated pixel art into printable bead patterns with exact colour counts.',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
   },
   robots: { index: true, follow: true },
 };

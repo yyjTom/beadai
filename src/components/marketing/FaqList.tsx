@@ -74,6 +74,12 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   },
   {
     category: 'Export',
+    question: 'Can I export anything on the free plan?',
+    answer:
+      'Yes. PNG export is free for any board inside your size limit — 29 × 29 on the free plan, larger boards on Pro. Printable PDF charts stay part of Pro, or you can unlock the PDF for one pattern with a single $1.99 payment.',
+  },
+  {
+    category: 'Export',
     question: 'What is included in the printable PDF?',
     answer:
       'The PDF contains a clean grid with tiny colour codes printed in each cell, plus the full shopping list. It is sized for A4 and US Letter printing and is part of the Pro plan.',

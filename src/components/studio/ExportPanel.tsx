@@ -1,17 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { FileDown, Lock } from 'lucide-react';
+import { FileDown, Image as ImageIcon, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { exportPatternPdf } from '@/lib/pdf/exportPattern';
 import { SubscribeButton } from '@/components/auth/SubscribeButton';
+import { exportPatternPdf } from '@/lib/pdf/exportPattern';
+import { exportPatternPng } from '@/lib/export/exportPatternPng';
 import type { PaletteBrand, PatternResult } from '@/types/pattern';
 
 export const ExportPanel = ({
   pattern,
   brand,
   canExport,
+  canExportPng,
   unlockedByPurchase,
   patternHash,
   signedIn,
@@ -20,14 +22,16 @@ export const ExportPanel = ({
   pattern: PatternResult | null;
   brand: PaletteBrand;
   canExport: boolean;
+  canExportPng: boolean;
   unlockedByPurchase?: boolean;
   patternHash: string | null;
   signedIn: boolean;
   onUpgrade: () => void;
 }) => {
   const [exporting, setExporting] = useState(false);
+  const [exportingPng, setExportingPng] = useState(false);
 
-  const download = () => {
+  const downloadPdf = () => {
     if (!pattern || !canExport) return;
     setExporting(true);
     try {
@@ -38,6 +42,18 @@ export const ExportPanel = ({
       console.error('[export] pdf generation failed', error);
     } finally {
       setExporting(false);
+    }
+  };
+
+  const downloadPng = async () => {
+    if (!pattern || !canExportPng) return;
+    setExportingPng(true);
+    try {
+      await exportPatternPng(pattern, brand);
+    } catch (error) {
+      console.error('[export] png generation failed', error);
+    } finally {
+      setExportingPng(false);
     }
   };
 
@@ -61,45 +77,60 @@ export const ExportPanel = ({
         shopping list on a second page.
       </p>
 
-      {canExport ? (
-        <Button
-          type="button"
-          variant="gradient"
-          className="mt-5 w-full"
-          onClick={download}
-          disabled={!pattern || exporting}
-        >
-          <FileDown className="h-4 w-4" />
-          {exporting ? 'Building your PDF…' : 'Download PDF chart'}
-        </Button>
-      ) : (
-        <div className="mt-5 space-y-3">
-          <SubscribeButton
-            plan="single-unlock"
-            patternHash={patternHash}
-            next="/studio"
-            variant="gradient"
+      <div className="mt-5 space-y-3">
+        {canExportPng ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => void downloadPng()}
+            disabled={!pattern || exportingPng}
           >
-            Unlock this pattern — $1.99
-          </SubscribeButton>
-
-          <Button type="button" variant="outline" className="w-full" onClick={onUpgrade}>
-            See Pro instead
+            <ImageIcon className="h-4 w-4" />
+            {exportingPng ? 'Rendering PNG…' : 'Download PNG'}
           </Button>
+        ) : null}
 
-          {!pattern ? (
-            <p className="text-xs text-ink-muted">
-              Generate a pattern first, then unlock it for printing.
-            </p>
-          ) : null}
+        {canExport ? (
+          <Button
+            type="button"
+            variant="gradient"
+            className="w-full"
+            onClick={downloadPdf}
+            disabled={!pattern || exporting}
+          >
+            <FileDown className="h-4 w-4" />
+            {exporting ? 'Building your PDF…' : 'Download PDF chart'}
+          </Button>
+        ) : (
+          <>
+            <SubscribeButton
+              plan="single-unlock"
+              patternHash={patternHash}
+              next="/studio"
+              variant="gradient"
+            >
+              Unlock this pattern — $1.99
+            </SubscribeButton>
 
-          {pattern && !signedIn ? (
-            <p className="text-xs text-ink-muted">
-              Sign in first — the unlock is attached to your account, not this browser.
-            </p>
-          ) : null}
-        </div>
-      )}
+            <Button type="button" variant="outline" className="w-full" onClick={onUpgrade}>
+              See Pro instead
+            </Button>
+          </>
+        )}
+      </div>
+
+      {!pattern ? (
+        <p className="mt-4 text-xs text-ink-muted">
+          Generate a pattern first, then export it for printing.
+        </p>
+      ) : null}
+
+      {pattern && !canExport && !signedIn ? (
+        <p className="mt-3 text-xs text-ink-muted">
+          Sign in first — the unlock is attached to your account, not this browser.
+        </p>
+      ) : null}
 
       {canExport && unlockedByPurchase ? (
         <p className="mt-3 text-xs text-ink-muted">
@@ -108,9 +139,10 @@ export const ExportPanel = ({
         </p>
       ) : null}
 
-      {canExport && !unlockedByPurchase && !pattern ? (
-        <p className="mt-4 text-xs text-ink-muted">
-          Generate a pattern first, then export it for printing.
+      {canExportPng && !canExport ? (
+        <p className="mt-3 text-xs text-ink-muted">
+          PNG export is free inside your board size. PDF charts and larger boards are part of
+          Pro.
         </p>
       ) : null}
     </div>
