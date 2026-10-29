@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: 'Pricing',
   description:
     'Free 29 × 29 bead patterns and shopping lists. Pro unlocks unlimited AI generations, 58 × 58 boards, colour swaps and printable PDF charts.',
+  alternates: { canonical: '/pricing' },
 };
 
 type PlanCta =

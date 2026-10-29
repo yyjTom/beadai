@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: 'Frequently asked questions',
   description:
     'Answers about bead pattern generation, AI limits, Perler and Artkal colour matching, accounts, subscriptions and printable PDF exports.',
+  alternates: { canonical: '/faq' },
 };
 
 export default function FaqPage() {

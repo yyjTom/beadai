@@ -14,6 +14,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.siteUrl),
+  alternates: { canonical: '/' },
   title: {
     default: 'beadai — Turn any photo or idea into a fuse bead pattern',
     template: '%s | beadai',

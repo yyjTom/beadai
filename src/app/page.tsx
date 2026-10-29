@@ -41,6 +41,23 @@ const faqSchema = {
   ],
 };
 
+const softwareSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'beadai',
+  applicationCategory: 'DesignApplication',
+  operatingSystem: 'Web browser',
+  url: 'https://beadai.app',
+  description:
+    'Turn any photo or idea into a Perler or Artkal fuse bead pattern with exact colour counts, a shopping list and printable charts.',
+  offers: [
+    { '@type': 'Offer', name: 'Free', price: '0', priceCurrency: 'USD' },
+    { '@type': 'Offer', name: 'Pro monthly', price: '4.99', priceCurrency: 'USD' },
+    { '@type': 'Offer', name: 'Pro yearly', price: '39.00', priceCurrency: 'USD' },
+    { '@type': 'Offer', name: 'Pro once', price: '49.00', priceCurrency: 'USD' },
+  ],
+};
+
 export default function HomePage() {
   return (
     <>
@@ -90,6 +107,10 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
       />
     </>
   );

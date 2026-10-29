@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Bead studio',
   description:
     'Convert a photo or an AI-generated pixel image into a Perler or Artkal bead pattern with denoising, colour swap and an exact shopping list.',
+  alternates: { canonical: '/studio' },
 };
 
 export default function StudioPage() {

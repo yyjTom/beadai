@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Sign in',
   description:
     'Sign in to beadai with Google or a single-use email link. No passwords, and no account is needed to try a 29 × 29 pattern.',
+  alternates: { canonical: '/login' },
 };
 
 export default function LoginPage() {
