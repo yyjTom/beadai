@@ -1,6 +1,6 @@
 import { and, eq, gt, isNull, or } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import { subscriptions } from '@/lib/db/schema';
+import { patternUnlocks, subscriptions } from '@/lib/db/schema';
 import { env, integrationStatus } from '@/lib/env';
 import { readUsage } from '@/lib/quota/aiQuota';
 import { FREE_MAX_GRID, PRO_MAX_GRID, GUEST_DAILY_AI_LIMIT } from '@/lib/plan';
@@ -12,6 +12,7 @@ export interface ResolveInput {
   userId: string | null;
   anonKey: string | null;
   ipKey: string | null;
+  patternHash?: string | null;
 }
 
 const ACTIVE_STATUSES = ['active', 'renewed', 'trialing'];
@@ -51,11 +52,31 @@ export const resolveSubscription = async (
   };
 };
 
+export const isPatternUnlocked = async (userId: string, patternHash: string): Promise<boolean> => {
+  const db = getDb();
+  if (!db) return false;
+
+  const rows = await db
+    .select({ id: patternUnlocks.id })
+    .from(patternUnlocks)
+    .where(
+      and(eq(patternUnlocks.userId, userId), eq(patternUnlocks.patternHash, patternHash)),
+    )
+    .limit(1);
+
+  return rows.length > 0;
+};
+
 export const resolveEntitlement = async (input: ResolveInput): Promise<EntitlementStatus> => {
   const integrations = integrationStatus();
 
   const subscription = input.userId ? await resolveSubscription(input.userId) : null;
   const isPro = Boolean(subscription);
+
+  const unlocked =
+    input.userId && input.patternHash && !isPro
+      ? await isPatternUnlocked(input.userId, input.patternHash)
+      : false;
 
   const subjects = [
     input.userId ? `user:${input.userId}` : null,
@@ -73,10 +94,10 @@ export const resolveEntitlement = async (input: ResolveInput): Promise<Entitleme
     active: isPro,
     aiRemaining: isPro ? null : remaining,
     aiUnlimited: isPro,
-    canExportPdf: isPro,
+    canExportPdf: isPro || unlocked,
     maxGrid: isPro ? PRO_MAX_GRID : FREE_MAX_GRID,
     renewsAt: subscription?.renewsAt ?? null,
-    source: isPro ? 'subscription' : input.userId ? 'user' : 'anonymous',
+    source: isPro ? 'subscription' : unlocked ? 'unlock' : input.userId ? 'user' : 'anonymous',
     integrations,
   };
 };

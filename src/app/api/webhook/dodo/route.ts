@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { and, eq, sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import { subscriptions, webhookEvents } from '@/lib/db/schema';
+import { patternUnlocks, subscriptions, webhookEvents } from '@/lib/db/schema';
 import { isFreshTimestamp, verifyDodoSignature } from '@/lib/entitlement/dodo';
 import { newId } from '@/lib/utils/crypto';
 
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 interface DodoEvent {
   type?: string;
   data?: {
-    metadata?: { user_id?: string; plan_key?: string };
+    metadata?: { user_id?: string; plan_key?: string; pattern_hash?: string };
     subscription_id?: string;
     subscription_ids?: string[];
     status?: string;
@@ -110,6 +110,58 @@ const upsertSubscription = async (input: {
     });
 };
 
+/**
+ * One-time purchases. `pro-lifetime` writes a non-expiring subscription row so the
+ * existing entitlement check keeps working; `single-unlock` records one pattern hash.
+ */
+const grantLifetime = async (input: {
+  userId: string;
+  planKey: string;
+  paymentId: string;
+}): Promise<void> => {
+  const db = getDb();
+  if (!db) throw new Error('database_unavailable');
+
+  await db
+    .insert(subscriptions)
+    .values({
+      id: newId(),
+      userId: input.userId,
+      provider: 'dodo',
+      providerSubscriptionId: input.paymentId,
+      status: 'active',
+      planKey: input.planKey,
+      currentPeriodEnd: null,
+      canceledAt: null,
+    })
+    .onConflictDoUpdate({
+      target: [subscriptions.provider, subscriptions.providerSubscriptionId],
+      set: { status: 'active', planKey: input.planKey, currentPeriodEnd: null, canceledAt: null },
+    });
+};
+
+const unlockPattern = async (input: {
+  userId: string;
+  patternHash: string;
+  paymentId: string;
+}): Promise<void> => {
+  const db = getDb();
+  if (!db) throw new Error('database_unavailable');
+
+  await db
+    .insert(patternUnlocks)
+    .values({
+      id: newId(),
+      userId: input.userId,
+      patternHash: input.patternHash,
+      provider: 'dodo',
+      providerPaymentId: input.paymentId,
+    })
+    .onConflictDoNothing();
+};
+
+const PATTERN_HASH = /^[a-f0-9]{64}$/;
+
 const ignore = (reason: string) =>
   NextResponse.json({ ignored: true, reason }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
 
@@ -156,7 +208,49 @@ export const POST = async (request: Request) => {
   }
 
   if (eventType.startsWith('payment.')) {
-    // One-time packs are not part of this product; subscriptions only update state.
+    if (eventType !== 'payment.succeeded') {
+      await markEvent(eventId, eventType, 'ignored_payment');
+      return ignore('payment_event_no_ledger');
+    }
+
+    const paymentId = event.data?.payment_id ?? webhookId ?? newId();
+
+    if (planKey === 'pro-lifetime') {
+      try {
+        await grantLifetime({ userId, planKey, paymentId });
+        await markEvent(eventId, eventType, 'processed');
+        return NextResponse.json(
+          { received: true },
+          { headers: { 'Cache-Control': 'no-store' } },
+        );
+      } catch (error) {
+        console.error('[dodo-webhook] lifetime grant failed', error);
+        await markEvent(eventId, eventType, 'failed');
+        return NextResponse.json({ error: 'processing_failed' }, { status: 500 });
+      }
+    }
+
+    if (planKey === 'single-unlock') {
+      const patternHash = event.data?.metadata?.pattern_hash;
+      if (!patternHash || !PATTERN_HASH.test(patternHash)) {
+        await markEvent(eventId, eventType, 'ignored_missing_pattern_hash');
+        return ignore('missing_pattern_hash');
+      }
+
+      try {
+        await unlockPattern({ userId, patternHash, paymentId });
+        await markEvent(eventId, eventType, 'processed');
+        return NextResponse.json(
+          { received: true },
+          { headers: { 'Cache-Control': 'no-store' } },
+        );
+      } catch (error) {
+        console.error('[dodo-webhook] pattern unlock failed', error);
+        await markEvent(eventId, eventType, 'failed');
+        return NextResponse.json({ error: 'processing_failed' }, { status: 500 });
+      }
+    }
+
     await markEvent(eventId, eventType, 'ignored_payment');
     return ignore('payment_event_no_ledger');
   }

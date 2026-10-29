@@ -8,9 +8,14 @@ import { Button, type ButtonProps } from '@/components/ui/button';
 export const SubscribeButton = ({
   plan,
   next,
+  patternHash,
   children,
   ...props
-}: { plan: 'pro-monthly' | 'pro-yearly'; next?: string } & ButtonProps) => {
+}: {
+  plan: 'pro-monthly' | 'pro-yearly' | 'pro-lifetime' | 'single-unlock';
+  next?: string;
+  patternHash?: string | null;
+} & ButtonProps) => {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +27,7 @@ export const SubscribeButton = ({
     const response = await fetch('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, ...(patternHash ? { patternHash } : {}) }),
     }).catch(() => null);
 
     const payload = (await response?.json().catch(() => null)) as

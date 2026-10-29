@@ -10,7 +10,7 @@ export interface EntitlementStatus {
   canExportPdf: boolean;
   maxGrid: number;
   renewsAt: string | null;
-  source: 'anonymous' | 'user' | 'subscription';
+  source: 'anonymous' | 'user' | 'subscription' | 'unlock';
   integrations: {
     database: boolean;
     auth: boolean;

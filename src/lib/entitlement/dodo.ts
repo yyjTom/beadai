@@ -7,6 +7,7 @@ export interface DodoCheckoutInput {
   userId: string;
   planKey: string;
   returnPath: string;
+  patternHash?: string | null;
 }
 
 export interface DodoCheckoutResult {
@@ -31,6 +32,7 @@ export const createCheckout = async (input: DodoCheckoutInput): Promise<DodoChec
       metadata: {
         user_id: input.userId,
         plan_key: input.planKey,
+        ...(input.patternHash ? { pattern_hash: input.patternHash } : {}),
       },
     }),
   });
@@ -93,6 +95,8 @@ export const isFreshTimestamp = (timestamp: string | null): boolean => {
 export const DODO_PLANS = {
   'pro-monthly': env.dodoProMonthlyProductId,
   'pro-yearly': env.dodoProYearlyProductId,
+  'pro-lifetime': env.dodoProLifetimeProductId,
+  'single-unlock': env.dodoSingleUnlockProductId,
 } as const;
 
 export type DodoPlanKey = keyof typeof DODO_PLANS;
@@ -100,3 +104,7 @@ export type DodoPlanKey = keyof typeof DODO_PLANS;
 export const isKnownPlan = (value: string): value is DodoPlanKey => value in DODO_PLANS;
 
 export const planProductId = (key: DodoPlanKey): string | null => DODO_PLANS[key] ?? null;
+
+/** Plans that are paid once instead of renewing. */
+export const isOneTimePlan = (key: DodoPlanKey): boolean =>
+  key === 'pro-lifetime' || key === 'single-unlock';

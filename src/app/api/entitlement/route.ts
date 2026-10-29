@@ -9,10 +9,15 @@ export const dynamic = 'force-dynamic';
 export const GET = async (request: Request) => {
   const session = await readSession();
 
+  const requestedHash = new URL(request.url).searchParams.get('pattern');
+  const patternHash =
+    requestedHash && /^[a-f0-9]{64}$/.test(requestedHash) ? requestedHash : null;
+
   const entitlement = await resolveEntitlement({
     userId: session?.userId ?? null,
     anonKey: await anonKey(),
     ipKey: ipKey(request),
+    patternHash,
   });
 
   return NextResponse.json(

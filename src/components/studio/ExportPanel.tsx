@@ -5,17 +5,24 @@ import { FileDown, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { exportPatternPdf } from '@/lib/pdf/exportPattern';
+import { SubscribeButton } from '@/components/auth/SubscribeButton';
 import type { PaletteBrand, PatternResult } from '@/types/pattern';
 
 export const ExportPanel = ({
   pattern,
   brand,
   canExport,
+  unlockedByPurchase,
+  patternHash,
+  signedIn,
   onUpgrade,
 }: {
   pattern: PatternResult | null;
   brand: PaletteBrand;
   canExport: boolean;
+  unlockedByPurchase?: boolean;
+  patternHash: string | null;
+  signedIn: boolean;
   onUpgrade: () => void;
 }) => {
   const [exporting, setExporting] = useState(false);
@@ -66,12 +73,42 @@ export const ExportPanel = ({
           {exporting ? 'Building your PDF…' : 'Download PDF chart'}
         </Button>
       ) : (
-        <Button type="button" variant="gradient" className="mt-5 w-full" onClick={onUpgrade}>
-          Unlock PDF export
-        </Button>
+        <div className="mt-5 space-y-3">
+          <SubscribeButton
+            plan="single-unlock"
+            patternHash={patternHash}
+            next="/studio"
+            variant="gradient"
+          >
+            Unlock this pattern — $1.99
+          </SubscribeButton>
+
+          <Button type="button" variant="outline" className="w-full" onClick={onUpgrade}>
+            See Pro instead
+          </Button>
+
+          {!pattern ? (
+            <p className="text-xs text-ink-muted">
+              Generate a pattern first, then unlock it for printing.
+            </p>
+          ) : null}
+
+          {pattern && !signedIn ? (
+            <p className="text-xs text-ink-muted">
+              Sign in first — the unlock is attached to your account, not this browser.
+            </p>
+          ) : null}
+        </div>
       )}
 
-      {!pattern ? (
+      {canExport && unlockedByPurchase ? (
+        <p className="mt-3 text-xs text-ink-muted">
+          This pattern is unlocked. Any change to the grid, colours or brand creates a new
+          pattern, which needs its own unlock.
+        </p>
+      ) : null}
+
+      {canExport && !unlockedByPurchase && !pattern ? (
         <p className="mt-4 text-xs text-ink-muted">
           Generate a pattern first, then export it for printing.
         </p>

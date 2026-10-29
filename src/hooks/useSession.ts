@@ -13,16 +13,20 @@ export interface UseSessionResult {
 
 const emptySession: SessionResponse = { signedIn: false, user: null };
 
-export const useSession = (): UseSessionResult => {
+export const useSession = (patternHash?: string | null): UseSessionResult => {
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [entitlement, setEntitlement] = useState<EntitlementStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     try {
+      const entitlementUrl = patternHash
+        ? `/api/entitlement?pattern=${encodeURIComponent(patternHash)}`
+        : '/api/entitlement';
+
       const [sessionResponse, entitlementResponse] = await Promise.all([
         fetch('/api/auth/session', { cache: 'no-store' }),
-        fetch('/api/entitlement', { cache: 'no-store' }),
+        fetch(entitlementUrl, { cache: 'no-store' }),
       ]);
 
       if (sessionResponse.ok) {
@@ -40,7 +44,7 @@ export const useSession = (): UseSessionResult => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [patternHash]);
 
   const signOut = useCallback(async () => {
     try {

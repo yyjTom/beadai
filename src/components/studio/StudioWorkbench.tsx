@@ -19,6 +19,7 @@ import { useSession } from '@/hooks/useSession';
 import { clearHistory, pushHistoryEntry, readHistory, removeHistoryEntry } from '@/lib/storage/history';
 import { takeHandoffImage } from '@/lib/storage/handoff';
 import { resolvePattern } from '@/lib/color/swap';
+import { hashPattern } from '@/lib/utils/patternHash';
 import { exportPatternPdf } from '@/lib/pdf/exportPattern';
 import { loadImageDataFromUrl, type LoadedImage } from '@/lib/utils/image';
 import {
@@ -36,7 +37,8 @@ const STEPS = ['Source', 'Pattern', 'Export'];
 export const StudioWorkbench = () => {
   const searchParams = useSearchParams();
   const { generate, busy: generating } = usePatternWorker();
-  const { session, entitlement } = useSession();
+  const [patternHash, setPatternHash] = useState<string | null>(null);
+  const { session, entitlement } = useSession(patternHash);
 
   const [source, setSource] = useState<StudioSource>(
     searchParams.get('source') === 'ai' ? 'ai' : 'upload',
@@ -152,6 +154,22 @@ export const StudioWorkbench = () => {
     }
     window.location.href = '/pricing';
   }, [signedIn]);
+
+  useEffect(() => {
+    if (!pattern) {
+      setPatternHash(null);
+      return;
+    }
+
+    let active = true;
+    void hashPattern(pattern, brand).then((hash) => {
+      if (active) setPatternHash(hash || null);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [pattern, brand]);
 
   const applySize = useCallback(
     (nextWidth: number, nextHeight: number) => {
@@ -312,6 +330,9 @@ export const StudioWorkbench = () => {
             pattern={pattern}
             brand={brand}
             canExport={Boolean(entitlement?.canExportPdf)}
+            unlockedByPurchase={entitlement?.source === 'unlock'}
+            patternHash={patternHash}
+            signedIn={signedIn}
             onUpgrade={requestUpgrade}
           />
 

@@ -9,6 +9,10 @@ export const dynamic = 'force-dynamic';
 
 const bodySchema = z.object({
   plan: z.string().min(1),
+  patternHash: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
 });
 
 export const POST = async (request: Request) => {
@@ -41,6 +45,17 @@ export const POST = async (request: Request) => {
     );
   }
 
+  if (parsed.data.plan === 'single-unlock' && !parsed.data.patternHash) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: 'missing_pattern',
+        message: 'Generate a pattern first, then unlock it for PDF export.',
+      },
+      { status: 400, headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
+
   const session = await readSession();
   if (!session) {
     return NextResponse.json(
@@ -59,7 +74,11 @@ export const POST = async (request: Request) => {
       email: session.email,
       userId: session.userId,
       planKey: parsed.data.plan,
-      returnPath: '/account?checkout=return',
+      returnPath:
+        parsed.data.plan === 'single-unlock'
+          ? '/studio?checkout=return'
+          : '/account?checkout=return',
+      patternHash: parsed.data.patternHash ?? null,
     });
 
     return NextResponse.json(

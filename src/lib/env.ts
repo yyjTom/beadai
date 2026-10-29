@@ -44,6 +44,8 @@ export const env = {
   dodoEnv: (read(process.env.DODO_PAYMENTS_ENV) ?? 'test').toLowerCase(),
   dodoProMonthlyProductId: read(process.env.DODO_PRO_MONTHLY_PRODUCT_ID),
   dodoProYearlyProductId: read(process.env.DODO_PRO_YEARLY_PRODUCT_ID),
+  dodoProLifetimeProductId: read(process.env.DODO_PRO_LIFETIME_PRODUCT_ID),
+  dodoSingleUnlockProductId: read(process.env.DODO_SINGLE_UNLOCK_PRODUCT_ID),
 
   affiliateTag: read(process.env.AMAZON_ASSOCIATES_TAG),
   affiliateBaseUrl:

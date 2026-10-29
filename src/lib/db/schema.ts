@@ -98,6 +98,24 @@ export const subscriptions = pgTable(
   ],
 );
 
+export const patternUnlocks = pgTable(
+  'pattern_unlocks',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    patternHash: text('pattern_hash').notNull(),
+    provider: text('provider').notNull(),
+    providerPaymentId: text('provider_payment_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('pattern_unlocks_user_hash_key').on(table.userId, table.patternHash),
+    index('pattern_unlocks_user_idx').on(table.userId),
+  ],
+);
+
 export const webhookEvents = pgTable(
   'webhook_events',
   {

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 type PlanCta =
   | { label: string; href: string }
-  | { label: string; plan: 'pro-monthly' };
+  | { label: string; plan: 'pro-monthly' | 'pro-yearly' | 'pro-lifetime' };
 
 const PLAN_CARDS: Array<{
   key: string;
@@ -58,6 +58,36 @@ const PLAN_CARDS: Array<{
     ],
     cta: { label: 'Subscribe to Pro', plan: 'pro-monthly' as const },
     highlight: true,
+  },
+  {
+    key: 'pro-yearly',
+    name: 'Pro yearly',
+    price: '$39',
+    cadence: 'per year',
+    summary: 'The same Pro access, billed once a year — about two months free.',
+    features: [
+      'Unlimited AI generations',
+      '58 × 58 and custom large boards',
+      'All four denoise levels',
+      'Colour swap with undo',
+      'Printable high-resolution PDF charts',
+    ],
+    cta: { label: 'Subscribe yearly', plan: 'pro-yearly' as const },
+  },
+  {
+    key: 'pro-lifetime',
+    name: 'Pro once',
+    price: '$49',
+    cadence: 'one payment',
+    summary: 'Pay once and keep Pro forever. No renewal and no card on file.',
+    features: [
+      'Everything in Pro, forever',
+      'Unlimited AI generations',
+      '58 × 58 and custom large boards',
+      'Printable high-resolution PDF charts',
+      'One-time payment, never renews',
+    ],
+    cta: { label: 'Buy Pro once', plan: 'pro-lifetime' as const },
   },
 ];
 
@@ -124,8 +154,10 @@ export default function PricingPage() {
         </div>
 
         <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-ink-muted">
-          Subscriptions are processed by Dodo Payments. Cancel any time from your account page;
-          access continues until the end of the current billing period.
+          Payments are processed by Dodo Payments. Subscriptions cancel any time from your account
+          page and continue until the end of the current billing period. Pro once is a single
+          payment and never renews. Need just one chart? You can unlock a single pattern for
+          $1.99 from the studio instead.
         </p>
       </section>
 
