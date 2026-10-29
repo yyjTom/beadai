@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-poppins: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color-scheme: light;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-ink antialiased;
+    font-family: var(--font-poppins);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(255, 107, 107, 0.08), transparent 42%),
+      radial-gradient(circle at 88% 4%, rgba(59, 201, 219, 0.1), transparent 38%),
+      radial-gradient(circle at 50% 100%, rgba(124, 92, 255, 0.08), transparent 45%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    @apply bg-bead-amber/40 text-ink;
+  }
+}
+
+@layer components {
+  .surface-card {
+    @apply rounded-3xl border border-black/5 bg-white/85 shadow-soft backdrop-blur-sm;
+  }
+
+  .surface-card-quiet {
+    @apply rounded-3xl border border-black/5 bg-cream-soft/80;
+  }
+
+  .bead-dot {
+    @apply rounded-full shadow-bead transition-transform duration-200;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-bead-coral via-bead-amber to-bead-violet bg-clip-text text-transparent;
+  }
+
+  .focus-ring {
+    @apply outline-none ring-offset-2 ring-offset-cream focus-visible:ring-2 focus-visible:ring-bead-violet;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .grid-board {
+    background-image:
+      linear-gradient(to right, rgba(43, 42, 41, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(43, 42, 41, 0.08) 1px, transparent 1px);
+  }
+}
