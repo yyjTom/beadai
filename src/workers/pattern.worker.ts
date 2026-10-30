@@ -10,6 +10,7 @@ export interface PatternWorkerRequest {
   height: number;
   brand: PaletteBrand;
   denoiseLevel: DenoiseLevel;
+  removeBackground?: boolean;
   pixels: ArrayBuffer;
   sourceWidth: number;
   sourceHeight: number;
@@ -40,6 +41,7 @@ self.onmessage = (event: MessageEvent<PatternWorkerRequest>) => {
       height: message.height,
       brand: message.brand,
       denoiseLevel: message.denoiseLevel,
+      removeBackground: message.removeBackground,
     });
 
     post({ type: 'done', requestId, pattern });

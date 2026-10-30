@@ -50,6 +50,7 @@ export const StudioWorkbench = () => {
   const [height, setHeight] = useState<number>(GRID_PRESETS[0].height);
   const [brand, setBrand] = useState<PaletteBrand>('perler');
   const [denoiseLevel, setDenoiseLevel] = useState<DenoiseLevel>(1);
+  const [removeBackground, setRemoveBackground] = useState(false);
   const [basePattern, setBasePattern] = useState<PatternResult | null>(null);
   const [swapMap, setSwapMap] = useState<PatternSwapMap>({});
 
@@ -123,6 +124,7 @@ export const StudioWorkbench = () => {
         height,
         brand,
         denoiseLevel,
+        removeBackground,
       })
         .then((result) => {
           if (generationRef.current !== requestToken) return;
@@ -137,7 +139,7 @@ export const StudioWorkbench = () => {
     }, 220);
 
     return () => clearTimeout(timer);
-  }, [image, width, height, brand, denoiseLevel, generate]);
+  }, [image, width, height, brand, denoiseLevel, removeBackground, generate]);
 
   useEffect(() => {
     if (!basePattern) return;
@@ -301,6 +303,8 @@ export const StudioWorkbench = () => {
               onBrandChange={setBrand}
               denoiseLevel={denoiseLevel}
               onDenoiseChange={applyDenoise}
+              removeBackground={removeBackground}
+              onRemoveBackgroundChange={setRemoveBackground}
               maxGrid={maxGrid}
               canUseAdvanced={isPro}
               onUpgrade={requestUpgrade}

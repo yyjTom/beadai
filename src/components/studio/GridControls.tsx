@@ -3,6 +3,7 @@
 import { Info, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { DENOISE_LEVELS, DENOISE_PROFILES } from '@/lib/color/denoise';
 import { GRID_PRESETS, estimatePegboards, type DenoiseLevel } from '@/types/pattern';
 import type { PaletteBrand } from '@/types/pattern';
@@ -16,6 +17,8 @@ export const GridControls = ({
   onBrandChange,
   denoiseLevel,
   onDenoiseChange,
+  removeBackground,
+  onRemoveBackgroundChange,
   maxGrid,
   canUseAdvanced,
   onUpgrade,
@@ -27,6 +30,8 @@ export const GridControls = ({
   onBrandChange: (brand: PaletteBrand) => void;
   denoiseLevel: DenoiseLevel;
   onDenoiseChange: (level: DenoiseLevel) => void;
+  removeBackground: boolean;
+  onRemoveBackgroundChange: (value: boolean) => void;
   maxGrid: number;
   canUseAdvanced: boolean;
   onUpgrade: () => void;
@@ -171,6 +176,18 @@ export const GridControls = ({
         <p className="mt-3 text-xs leading-relaxed text-ink-muted">
           {DENOISE_PROFILES[denoiseLevel].description}
         </p>
+      </div>
+
+      <div className="rounded-3xl border border-black/5 bg-white/70 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-ink">Remove background</p>
+            <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+              Skip the flat colour around flat artwork so you only buy beads for the subject.
+            </p>
+          </div>
+          <Switch checked={removeBackground} onCheckedChange={onRemoveBackgroundChange} />
+        </div>
       </div>
 
       {!canUseAdvanced ? (

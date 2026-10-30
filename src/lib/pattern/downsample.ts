@@ -14,9 +14,29 @@ export interface DownsampledCell {
 
 const ALPHA_EMPTY_THRESHOLD = 24;
 
+/** 8 levels per channel: absorbs AI noise / JPEG artefacts inside one bucket. */
+const BUCKET_SHIFT = 5;
+
+const bucketKey = (r: number, g: number, b: number): number =>
+  ((r >> BUCKET_SHIFT) << 10) | ((g >> BUCKET_SHIFT) << 5) | (b >> BUCKET_SHIFT);
+
+interface Bucket {
+  r: number;
+  g: number;
+  b: number;
+  n: number;
+}
+
 /**
- * Box-average downsample. Averaging (instead of nearest neighbour) keeps smooth
- * gradients readable and avoids aliasing when a large photo becomes 29 beads.
+ * Dominant-colour downsample. Each cell quantises its pixels into coarse
+ * buckets; when one colour holds at least half the cell, that bucket's own
+ * average becomes the bead colour instead of the blend of everything inside.
+ *
+ * Plain averaging turns a flat watermark-red into a muddy brick because white
+ * highlights and background bleed into every cell, and it lets a lightly noisy
+ * background scatter across near-identical bead shades. Dominant sampling keeps
+ * flat artwork flat while photos (where no colour dominates) still get the
+ * blend behaviour.
  */
 export const downsampleToGrid = (
   source: RgbaSource,
@@ -34,35 +54,63 @@ export const downsampleToGrid = (
       const xStart = Math.floor((tx * width) / targetWidth);
       const xEnd = Math.max(xStart + 1, Math.floor(((tx + 1) * width) / targetWidth));
 
-      let r = 0;
-      let g = 0;
-      let b = 0;
-      let a = 0;
+      let sumR = 0;
+      let sumG = 0;
+      let sumB = 0;
+      let sumA = 0;
       let samples = 0;
+      const buckets = new Map<number, Bucket>();
 
       for (let y = yStart; y < yEnd; y += 1) {
         for (let x = xStart; x < xEnd; x += 1) {
           const index = (y * width + x) * 4;
-          const alpha = data[index + 3];
-          r += data[index];
-          g += data[index + 1];
-          b += data[index + 2];
-          a += alpha;
+          const r = data[index];
+          const g = data[index + 1];
+          const b = data[index + 2];
+
+          sumR += r;
+          sumG += g;
+          sumB += b;
+          sumA += data[index + 3];
           samples += 1;
+
+          const key = bucketKey(r, g, b);
+          const bucket = buckets.get(key);
+          if (bucket) {
+            bucket.r += r;
+            bucket.g += g;
+            bucket.b += b;
+            bucket.n += 1;
+          } else {
+            buckets.set(key, { r, g, b, n: 1 });
+          }
         }
       }
 
-      const avgAlpha = samples > 0 ? a / samples : 0;
-      const isEmpty = avgAlpha < ALPHA_EMPTY_THRESHOLD;
+      if (samples === 0 || sumA / samples < ALPHA_EMPTY_THRESHOLD) {
+        cells[ty * targetWidth + tx] = { r: 255, g: 255, b: 255, empty: true };
+        continue;
+      }
 
-      cells[ty * targetWidth + tx] = isEmpty
-        ? { r: 255, g: 255, b: 255, empty: true }
-        : {
-            r: Math.round(r / samples),
-            g: Math.round(g / samples),
-            b: Math.round(b / samples),
-            empty: false,
-          };
+      let dominant: Bucket | null = null;
+      for (const bucket of buckets.values()) {
+        if (!dominant || bucket.n > dominant.n) dominant = bucket;
+      }
+
+      cells[ty * targetWidth + tx] =
+        dominant && dominant.n / samples >= 0.5
+          ? {
+              r: Math.round(dominant.r / dominant.n),
+              g: Math.round(dominant.g / dominant.n),
+              b: Math.round(dominant.b / dominant.n),
+              empty: false,
+            }
+          : {
+              r: Math.round(sumR / samples),
+              g: Math.round(sumG / samples),
+              b: Math.round(sumB / samples),
+              empty: false,
+            };
     }
   }
 
