@@ -13,6 +13,7 @@ export interface GenerateArgs {
   brand: PaletteBrand;
   denoiseLevel: DenoiseLevel;
   removeBackground?: boolean;
+  autoCrop?: boolean;
 }
 
 export interface UsePatternWorkerResult {
@@ -38,6 +39,7 @@ export const usePatternWorker = (): UsePatternWorkerResult => {
       brand: args.brand,
       denoiseLevel: args.denoiseLevel,
       removeBackground: args.removeBackground,
+      autoCrop: args.autoCrop,
     });
   }, []);
 
@@ -97,6 +99,7 @@ export const usePatternWorker = (): UsePatternWorkerResult => {
           brand: args.brand,
           denoiseLevel: args.denoiseLevel,
           removeBackground: args.removeBackground,
+          autoCrop: args.autoCrop,
           pixels: buffer,
           sourceWidth: args.source.width,
           sourceHeight: args.source.height,

@@ -118,4 +118,25 @@ describe('generatePattern quality regression (watermelon report)', () => {
     // The subject survives.
     expect(filledWithout).toBeGreaterThan(20);
   });
+
+  it('spends far more cells on the subject when fitted', () => {
+    // The synthetic subject covers roughly 12% of the frame.
+    const plain = run(false);
+    const fitted = generatePattern({
+      source: { width: source.width, height: source.height, data: source.data },
+      width: WIDTH,
+      height: HEIGHT,
+      brand: 'perler',
+      denoiseLevel: 1,
+      autoCrop: true,
+    });
+
+    const subjectBeads = (pattern: ReturnType<typeof generatePattern>) =>
+      pattern.usage
+        .filter((bead) => !/cream|white|sand|ivory/i.test(bead.color.id))
+        .reduce((sum, bead) => sum + bead.count, 0);
+
+    // Cropping the backdrop away must roughly double the resolution the subject gets.
+    expect(subjectBeads(fitted)).toBeGreaterThan(subjectBeads(plain) * 1.8);
+  });
 });

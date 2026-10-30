@@ -23,10 +23,14 @@ export const GET = async (request: Request) => {
 
   store.set(STATE_COOKIE, JSON.stringify({ s: state, n: next }), {
     httpOnly: true,
+    // Lax is required: Google navigates back to the callback cross-site, and
+    // Strict would withhold the cookie and fail every sign-in.
     sameSite: 'lax',
     secure: env.nodeEnv === 'production',
     path: '/',
-    maxAge: 600,
+    // 30 minutes. Ten was too tight once account chooser, password and 2FA
+    // were added up — an expired cookie reads as "session expired" to the user.
+    maxAge: 1800,
   });
 
   const redirectUri = googleRedirectUri();

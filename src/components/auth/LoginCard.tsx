@@ -13,7 +13,8 @@ import { HERO_ART } from '@/lib/marketing/gallery';
 
 const GOOGLE_REASONS: Record<string, string> = {
   unconfigured: 'Google sign-in is not configured on this deployment yet.',
-  state_missing: 'That sign-in session expired. Please start again.',
+  state_missing:
+    'That sign-in session expired. Please start again — if it keeps happening, try another browser or allow cookies for this site.',
   state_mismatch: 'We could not verify the sign-in request. Please try again.',
   denied: 'Google sign-in was cancelled.',
   no_code: 'Google did not return an authorization code.',

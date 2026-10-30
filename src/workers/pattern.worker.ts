@@ -11,6 +11,7 @@ export interface PatternWorkerRequest {
   brand: PaletteBrand;
   denoiseLevel: DenoiseLevel;
   removeBackground?: boolean;
+  autoCrop?: boolean;
   pixels: ArrayBuffer;
   sourceWidth: number;
   sourceHeight: number;
@@ -42,6 +43,7 @@ self.onmessage = (event: MessageEvent<PatternWorkerRequest>) => {
       brand: message.brand,
       denoiseLevel: message.denoiseLevel,
       removeBackground: message.removeBackground,
+      autoCrop: message.autoCrop,
     });
 
     post({ type: 'done', requestId, pattern });

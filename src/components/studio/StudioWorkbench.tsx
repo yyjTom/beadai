@@ -51,6 +51,7 @@ export const StudioWorkbench = () => {
   const [brand, setBrand] = useState<PaletteBrand>('perler');
   const [denoiseLevel, setDenoiseLevel] = useState<DenoiseLevel>(1);
   const [removeBackground, setRemoveBackground] = useState(false);
+  const [autoCrop, setAutoCrop] = useState(true);
   const [basePattern, setBasePattern] = useState<PatternResult | null>(null);
   const [swapMap, setSwapMap] = useState<PatternSwapMap>({});
 
@@ -125,6 +126,7 @@ export const StudioWorkbench = () => {
         brand,
         denoiseLevel,
         removeBackground,
+        autoCrop,
       })
         .then((result) => {
           if (generationRef.current !== requestToken) return;
@@ -139,7 +141,7 @@ export const StudioWorkbench = () => {
     }, 220);
 
     return () => clearTimeout(timer);
-  }, [image, width, height, brand, denoiseLevel, removeBackground, generate]);
+  }, [image, width, height, brand, denoiseLevel, removeBackground, autoCrop, generate]);
 
   useEffect(() => {
     if (!basePattern) return;
@@ -305,6 +307,8 @@ export const StudioWorkbench = () => {
               onDenoiseChange={applyDenoise}
               removeBackground={removeBackground}
               onRemoveBackgroundChange={setRemoveBackground}
+              autoCrop={autoCrop}
+              onAutoCropChange={setAutoCrop}
               maxGrid={maxGrid}
               canUseAdvanced={isPro}
               onUpgrade={requestUpgrade}

@@ -19,6 +19,8 @@ export const GridControls = ({
   onDenoiseChange,
   removeBackground,
   onRemoveBackgroundChange,
+  autoCrop,
+  onAutoCropChange,
   maxGrid,
   canUseAdvanced,
   onUpgrade,
@@ -32,6 +34,8 @@ export const GridControls = ({
   onDenoiseChange: (level: DenoiseLevel) => void;
   removeBackground: boolean;
   onRemoveBackgroundChange: (value: boolean) => void;
+  autoCrop: boolean;
+  onAutoCropChange: (value: boolean) => void;
   maxGrid: number;
   canUseAdvanced: boolean;
   onUpgrade: () => void;
@@ -176,6 +180,19 @@ export const GridControls = ({
         <p className="mt-3 text-xs leading-relaxed text-ink-muted">
           {DENOISE_PROFILES[denoiseLevel].description}
         </p>
+      </div>
+
+      <div className="rounded-3xl border border-black/5 bg-white/70 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-ink">Fit to subject</p>
+            <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+              Crop flat backdrops away so every cell goes to the artwork — the biggest quality win
+              on small boards.
+            </p>
+          </div>
+          <Switch checked={autoCrop} onCheckedChange={onAutoCropChange} />
+        </div>
       </div>
 
       <div className="rounded-3xl border border-black/5 bg-white/70 p-4">
