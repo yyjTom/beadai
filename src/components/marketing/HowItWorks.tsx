@@ -9,7 +9,7 @@ const STEPS = [
   {
     icon: Grid3x3,
     title: 'Choose a board size',
-    body: 'Pick 29 × 29 for one standard pegboard, 58 × 58 for four boards, or set a custom grid. Denoising keeps blocks clean.',
+    body: 'Pick 29 × 29 for one standard pegboard, 58 × 58 for four boards (free), or 116 × 116 on Pro. Denoising keeps blocks clean.',
   },
   {
     icon: Download,

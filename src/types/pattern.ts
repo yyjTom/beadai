@@ -65,9 +65,19 @@ export const GRID_PRESETS = [
     width: 58,
     height: 58,
     label: '58 × 58',
-    hint: 'More detail; requires four standard pegboards.',
+    hint: 'Four times the detail; requires four standard pegboards.',
+  },
+  {
+    key: 'wall',
+    width: 116,
+    height: 116,
+    label: '116 × 116',
+    hint: 'Poster-scale detail; sixteen standard pegboards.',
   },
 ] as const;
+
+/** Board size a new session starts on. 29 × 29 is too coarse to read a subject. */
+export const DEFAULT_GRID = 58;
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 

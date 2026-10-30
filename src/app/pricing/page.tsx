@@ -11,7 +11,7 @@ import { FinalCta } from '@/components/marketing/FinalCta';
 export const metadata: Metadata = {
   title: 'Pricing',
   description:
-    'Free 29 × 29 bead patterns and shopping lists. Pro unlocks unlimited AI generations, 58 × 58 boards, colour swaps and printable PDF charts.',
+    'Free 58 × 58 bead patterns and shopping lists. Pro unlocks unlimited AI generations, 116 × 116 boards, colour swaps and printable PDF charts.',
   alternates: { canonical: '/pricing' },
 };
 
@@ -36,11 +36,11 @@ const PLAN_CARDS: Array<{
     cadence: 'forever',
     summary: 'Everything you need for a first sprite on one pegboard.',
     features: [
-      'Unlimited 29 × 29 patterns',
+      'Unlimited 58 × 58 patterns — 3,364 beads of detail',
       'Photo uploads up to 10MB',
       'Perler & Artkal colour matching',
       'Shopping list with exact counts',
-      'PNG export for 29 × 29 boards',
+      'PNG export for 58 × 58 boards',
       '3 AI generations per day',
     ],
     cta: { label: 'Open the studio', href: '/studio' },
@@ -53,7 +53,7 @@ const PLAN_CARDS: Array<{
     summary: 'For makers who publish patterns, run shops, or build big pieces.',
     features: [
       'Unlimited AI generations',
-      '58 × 58 and custom large boards',
+      '116 × 116 and custom large boards',
       'All four denoise levels',
       'Colour swap with undo',
       'Printable high-resolution PDF charts',
@@ -69,7 +69,7 @@ const PLAN_CARDS: Array<{
     summary: 'The same Pro access, billed once a year — about two months free.',
     features: [
       'Unlimited AI generations',
-      '58 × 58 and custom large boards',
+      '116 × 116 and custom large boards',
       'All four denoise levels',
       'Colour swap with undo',
       'Printable high-resolution PDF charts',
@@ -85,7 +85,7 @@ const PLAN_CARDS: Array<{
     features: [
       'Everything in Pro, forever',
       'Unlimited AI generations',
-      '58 × 58 and custom large boards',
+      '116 × 116 and custom large boards',
       'Printable high-resolution PDF charts',
       'One-time payment, never renews',
     ],

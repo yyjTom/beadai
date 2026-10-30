@@ -5,7 +5,7 @@ import { LoginCard } from '@/components/auth/LoginCard';
 export const metadata: Metadata = {
   title: 'Sign in',
   description:
-    'Sign in to beadai with Google or a single-use email link. No passwords, and no account is needed to try a 29 × 29 pattern.',
+    'Sign in to beadai with Google or a single-use email link. No passwords, and no account is needed to try a 58 × 58 pattern.',
   alternates: { canonical: '/login' },
 };
 

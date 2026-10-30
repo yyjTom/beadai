@@ -22,7 +22,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     category: 'Generation',
     question: 'Do I need an account to generate a pattern?',
     answer:
-      'No. Uploading a photo and building a 29 × 29 pattern works without signing in. You only need an account for a Pro subscription, unlimited AI generations, or recovering your subscription on another device.',
+      'No. Uploading a photo and building a 58 × 58 pattern works without signing in. You only need an account for a Pro subscription, unlimited AI generations, or recovering your subscription on another device.',
   },
   {
     category: 'Generation',
@@ -58,7 +58,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     category: 'Pricing',
     question: 'What does Pro unlock?',
     answer:
-      'Pro unlocks unlimited AI generations, 58 × 58 and larger boards, and printable high-resolution PDF charts. Shopping lists and 29 × 29 patterns stay free.',
+      'Pro unlocks unlimited AI generations, 116 × 116 and larger boards, and printable high-resolution PDF charts. Shopping lists and 58 × 58 patterns stay free.',
   },
   {
     category: 'Account',
@@ -76,7 +76,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     category: 'Export',
     question: 'Can I export anything on the free plan?',
     answer:
-      'Yes. PNG export is free for any board inside your size limit — 29 × 29 on the free plan, larger boards on Pro. Printable PDF charts stay part of Pro, or you can unlock the PDF for one pattern with a single $1.99 payment.',
+      'Yes. PNG export is free for any board inside your size limit — 58 × 58 on the free plan, larger boards on Pro. Printable PDF charts stay part of Pro, or you can unlock the PDF for one pattern with a single $1.99 payment.',
   },
   {
     category: 'Export',

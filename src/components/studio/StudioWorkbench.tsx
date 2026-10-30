@@ -24,7 +24,7 @@ import { exportPatternPdf } from '@/lib/pdf/exportPattern';
 import { exportPatternPng } from '@/lib/export/exportPatternPng';
 import { loadImageDataFromUrl, type LoadedImage } from '@/lib/utils/image';
 import {
-  GRID_PRESETS,
+  DEFAULT_GRID,
   type DenoiseLevel,
   type PatternHistoryEntry,
   type PatternResult,
@@ -46,8 +46,8 @@ export const StudioWorkbench = () => {
   );
   const [image, setImage] = useState<LoadedImage | null>(null);
   const [sourceLabel, setSourceLabel] = useState('Uploaded photo');
-  const [width, setWidth] = useState<number>(GRID_PRESETS[0].width);
-  const [height, setHeight] = useState<number>(GRID_PRESETS[0].height);
+  const [width, setWidth] = useState<number>(DEFAULT_GRID);
+  const [height, setHeight] = useState<number>(DEFAULT_GRID);
   const [brand, setBrand] = useState<PaletteBrand>('perler');
   const [denoiseLevel, setDenoiseLevel] = useState<DenoiseLevel>(1);
   const [removeBackground, setRemoveBackground] = useState(false);

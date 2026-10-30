@@ -42,7 +42,7 @@ export const Hero = () => (
         <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-muted">
           <li>No sign-up to start</li>
           <li className="hidden h-1 w-1 rounded-full bg-ink/20 sm:block" />
-          <li>29 × 29 patterns are free</li>
+          <li>58 × 58 patterns are free — 3,364 beads of detail</li>
           <li className="hidden h-1 w-1 rounded-full bg-ink/20 sm:block" />
           <li>3 free AI generations a day</li>
         </ul>

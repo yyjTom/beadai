@@ -97,7 +97,7 @@ export const LoginCard = () => {
           />
           <h2 className="mt-8 text-2xl font-bold text-ink">Sign in only when it helps</h2>
           <p className="mt-3 text-sm leading-relaxed text-ink-muted">
-            Converting a photo to a 29 × 29 pattern stays free without an account. Sign in to keep
+            Converting a photo to a 58 × 58 pattern stays free without an account. Sign in to keep
             Pro access, get unlimited AI generations, and recover your subscription on any device.
           </p>
         </div>
@@ -109,7 +109,7 @@ export const LoginCard = () => {
           </li>
           <li className="flex items-start gap-2">
             <Sparkles className="mt-0.5 h-4 w-4 text-bead-violet" />
-            Pro unlocks unlimited AI ideas, 58 × 58 boards and printable PDFs.
+            Pro unlocks unlimited AI ideas, 116 × 116 boards and printable PDFs.
           </li>
         </ul>
       </div>

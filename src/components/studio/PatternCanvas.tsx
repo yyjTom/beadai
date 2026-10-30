@@ -12,10 +12,10 @@ interface HoverCell {
 }
 
 /**
- * Above this many cells a DOM grid becomes unusable (116 × 116 is 13,456 nodes),
- * so large boards are painted on a canvas instead.
+ * Above this many cells a DOM grid becomes unusable (116 × 116 is 13,456 nodes,
+ * 58 × 58 is 3,364), so large boards are painted on a canvas instead.
  */
-const CANVAS_CELL_THRESHOLD = 5000;
+const CANVAS_CELL_THRESHOLD = 2500;
 
 const luminance = (rgb: [number, number, number]): number =>
   (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
