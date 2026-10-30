@@ -151,21 +151,40 @@ export const PatternCanvas = ({
   selectedColorId,
   onSelectColor,
   generating,
+  sourceUrl,
 }: {
   pattern: PatternResult | null;
   brand: PaletteBrand;
   selectedColorId: string | null;
   onSelectColor: (colorId: string) => void;
   generating: boolean;
+  sourceUrl: string | null;
 }) => {
   const [showGrid, setShowGrid] = useState(true);
   const [showCodes, setShowCodes] = useState(false);
   const [hover, setHover] = useState<HoverCell | null>(null);
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const [frameWidth, setFrameWidth] = useState(560);
+
+  // Boards are square, so the preview must be too: size beads from the card's
+  // real width instead of a fixed cell size that overflows into a scrollbar.
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) setFrameWidth(entry.contentRect.width);
+    });
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
 
   const cellSize = useMemo(() => {
     if (!pattern) return 18;
-    return pattern.width > 60 ? 8 : pattern.width > 40 ? 12 : 18;
-  }, [pattern]);
+    const gap = showGrid ? 1 : 0;
+    const fit = Math.floor((frameWidth - (pattern.width - 1) * gap) / pattern.width);
+    return Math.max(5, Math.min(22, fit || 5));
+  }, [pattern, frameWidth, showGrid]);
 
   const useCanvas = Boolean(pattern && pattern.width * pattern.height > CANVAS_CELL_THRESHOLD);
 
@@ -184,6 +203,23 @@ export const PatternCanvas = ({
         </div>
 
         <div className="flex items-center gap-5">
+          {sourceUrl ? (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="View the source image"
+              className="flex items-center gap-2 rounded-full border border-ink/10 bg-white py-1 pl-1 pr-3 text-xs font-semibold text-ink-muted transition hover:border-bead-violet hover:text-bead-violet focus-ring"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={sourceUrl}
+                alt="Source image"
+                className="h-9 w-9 rounded-full border border-ink/10 object-cover"
+              />
+              Original
+            </a>
+          ) : null}
           <label className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
             <Switch checked={showGrid} onCheckedChange={setShowGrid} />
             Grid
@@ -195,7 +231,10 @@ export const PatternCanvas = ({
         </div>
       </div>
 
-      <div className="mt-6 flex justify-center overflow-auto rounded-3xl bg-cream-soft/70 p-5">
+      <div
+        ref={frameRef}
+        className="mt-6 flex justify-center overflow-auto rounded-3xl bg-cream-soft/70 p-5"
+      >
         {pattern && useCanvas ? (
           <BeadCanvas
             pattern={pattern}

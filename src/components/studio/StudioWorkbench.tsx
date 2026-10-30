@@ -331,6 +331,7 @@ export const StudioWorkbench = () => {
             selectedColorId={selectedColorId}
             onSelectColor={setSelectedColorId}
             generating={generating}
+            sourceUrl={image?.sourceUrl ?? null}
           />
 
           {generating ? (
