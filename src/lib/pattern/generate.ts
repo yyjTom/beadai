@@ -273,7 +273,7 @@ const cropToSubject = (source: RgbaSource): RgbaSource => {
 
   const cropWidth = x1 - x0 + 1;
   const cropHeight = y1 - y0 + 1;
-  if (cropWidth >= width && cropHeight >= height) return source;
+  if (cropWidth >= width && cropHeight >= height && cropWidth === cropHeight) return source;
 
   const cropped = new Uint8ClampedArray(cropWidth * cropHeight * 4);
   for (let y = 0; y < cropHeight; y += 1) {
@@ -281,7 +281,25 @@ const cropToSubject = (source: RgbaSource): RgbaSource => {
     cropped.set(data.subarray(sourceRow, sourceRow + cropWidth * 4), y * cropWidth * 4);
   }
 
-  return { width: cropWidth, height: cropHeight, data: cropped };
+  if (cropWidth === cropHeight) return { width: cropWidth, height: cropHeight, data: cropped };
+
+  // Boards are square, so a wide crop would have been stretched. Pad the short
+  // side with the backdrop colour and keep the subject's real proportions.
+  const side = Math.max(cropWidth, cropHeight);
+  const squared = new Uint8ClampedArray(side * side * 4);
+  const fill = [Math.round(background.r), Math.round(background.g), Math.round(background.b), 255];
+  for (let index = 0; index < side * side; index += 1) {
+    squared.set(fill, index * 4);
+  }
+
+  const offsetX = Math.floor((side - cropWidth) / 2);
+  const offsetY = Math.floor((side - cropHeight) / 2);
+  for (let y = 0; y < cropHeight; y += 1) {
+    const from = y * cropWidth * 4;
+    squared.set(cropped.subarray(from, from + cropWidth * 4), ((y + offsetY) * side + offsetX) * 4);
+  }
+
+  return { width: side, height: side, data: squared };
 };
 
 /**
