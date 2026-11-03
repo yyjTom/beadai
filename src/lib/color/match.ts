@@ -14,7 +14,10 @@ export const getPaletteIndex = (brand: PaletteBrand): PaletteIndex => {
   const existing = cache.get(brand);
   if (existing) return existing;
 
-  const colors = PALETTES[brand];
+  // Custom (C-prefixed) shades exist only so older patterns keep rendering;
+  // they must never win a match, or the shopping list sends people looking for
+  // a bead number that no supplier sells.
+  const colors = PALETTES[brand].filter((color) => !color.code.startsWith('C'));
   const index: PaletteIndex = {
     brand,
     colors,
