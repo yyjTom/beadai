@@ -19,7 +19,7 @@ const faqSchema = {
       name: 'Do I need an account to generate a bead pattern?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Uploading a photo and building a 29 x 29 pattern works without signing in. An account is needed for a Pro subscription, unlimited AI generations, or recovering a subscription on another device.',
+        text: 'No. Uploading a photo and building a 58 x 58 pattern works without signing in. An account is needed for a Pro subscription, unlimited AI generations, or recovering a subscription on another device.',
       },
     },
     {
