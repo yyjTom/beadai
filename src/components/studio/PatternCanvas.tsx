@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { findPaletteColor } from '@/lib/color/palettes';
+import { cn } from '@/lib/utils/cn';
 import { EMPTY_CELL, type PatternResult } from '@/types/pattern';
 import type { PaletteBrand } from '@/types/pattern';
 
@@ -165,6 +166,10 @@ export const PatternCanvas = ({
   const [hover, setHover] = useState<HoverCell | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
   const [frameWidth, setFrameWidth] = useState(560);
+  // Hovering the "Original" chip previews the source image in place of the
+  // chart; clicking pins the comparison so touch users get it too.
+  const [pinnedSource, setPinnedSource] = useState(false);
+  const [hoveringSource, setHoveringSource] = useState(false);
 
   // Boards are square, so the preview must be too: size beads from the card's
   // real width instead of a fixed cell size that overflows into a scrollbar.
@@ -189,6 +194,7 @@ export const PatternCanvas = ({
   const useCanvas = Boolean(pattern && pattern.width * pattern.height > CANVAS_CELL_THRESHOLD);
 
   const hoverColor = hover ? findPaletteColor(brand, hover.colorId) : null;
+  const peekSource = Boolean(sourceUrl) && (pinnedSource || hoveringSource);
 
   return (
     <div className="rounded-[2.5rem] border border-black/5 bg-white/90 p-6 shadow-lift">
@@ -204,21 +210,30 @@ export const PatternCanvas = ({
 
         <div className="flex items-center gap-5">
           {sourceUrl ? (
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              title="View the source image"
-              className="flex items-center gap-2 rounded-full border border-ink/10 bg-white py-1 pl-1 pr-3 text-xs font-semibold text-ink-muted transition hover:border-bead-violet hover:text-bead-violet focus-ring"
+            <button
+              type="button"
+              onClick={() => setPinnedSource((value) => !value)}
+              onMouseEnter={() => setHoveringSource(true)}
+              onMouseLeave={() => setHoveringSource(false)}
+              onFocus={() => setHoveringSource(true)}
+              onBlur={() => setHoveringSource(false)}
+              title="Hover to compare with the original image, click to pin"
+              aria-pressed={peekSource}
+              className={cn(
+                'flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs font-semibold transition focus-ring',
+                peekSource
+                  ? 'border-bead-violet bg-bead-violet/10 text-bead-violet'
+                  : 'border-ink/10 bg-white text-ink-muted hover:border-bead-violet hover:text-bead-violet',
+              )}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={sourceUrl}
-                alt="Source image"
+                alt=""
                 className="h-9 w-9 rounded-full border border-ink/10 object-cover"
               />
-              Original
-            </a>
+              {peekSource ? 'Viewing original' : 'Original'}
+            </button>
           ) : null}
           <label className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
             <Switch checked={showGrid} onCheckedChange={setShowGrid} />
@@ -233,8 +248,24 @@ export const PatternCanvas = ({
 
       <div
         ref={frameRef}
-        className="mt-6 flex justify-center overflow-auto rounded-3xl bg-cream-soft/70 p-5"
+        className="relative mt-6 flex justify-center overflow-auto rounded-3xl bg-cream-soft/70 p-5"
       >
+        {sourceUrl ? (
+          <div
+            aria-hidden={!peekSource}
+            className={cn(
+              'pointer-events-none absolute inset-5 z-10 flex items-center justify-center rounded-3xl bg-cream-soft/70 transition-opacity duration-200',
+              peekSource ? 'opacity-100' : 'opacity-0',
+            )}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={sourceUrl}
+              alt="Original source image"
+              className="max-h-full max-w-full rounded-2xl object-contain"
+            />
+          </div>
+        ) : null}
         {pattern && useCanvas ? (
           <BeadCanvas
             pattern={pattern}
