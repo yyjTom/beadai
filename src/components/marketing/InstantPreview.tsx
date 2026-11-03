@@ -43,7 +43,8 @@ export const InstantPreview = () => {
   const { entitlement } = useSession();
 
   const [image, setImage] = useState<LoadedImage | null>(null);
-  const [sizeIndex, setSizeIndex] = useState(0);
+  // Start on 58 × 58: it is free, and 29 × 29 is too coarse to show real detail.
+  const [sizeIndex, setSizeIndex] = useState(1);
   const [brand, setBrand] = useState<PaletteBrand>('perler');
   const [denoiseLevel] = useState<DenoiseLevel>(1);
   const [pattern, setPattern] = useState<PatternResult | null>(null);
