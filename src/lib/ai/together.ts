@@ -45,6 +45,7 @@ export const togetherProvider: ImageProvider = {
         body: JSON.stringify({
           model: env.togetherModel,
           prompt,
+          ...(opts.negativePrompt ? { negative_prompt: opts.negativePrompt } : {}),
           n: 1,
           width: 1024,
           height: 1024,

@@ -32,6 +32,10 @@ export const env = {
   togetherModel: read(process.env.TOGETHER_IMAGE_MODEL) ?? 'black-forest-labs/FLUX.1-schnell-Free',
   togetherTimeoutMs: isPositiveInt(process.env.TOGETHER_TIMEOUT_MS) ?? 45_000,
   togetherMaxOutputBytes: isPositiveInt(process.env.TOGETHER_MAX_OUTPUT_BYTES) ?? 6 * 1024 * 1024,
+  // FLUX models are guidance-distilled and together.ai support for the field
+  // varies by model, so negativity is opt-in rather than risking a 400 on every
+  // generation. The positive style suffix always applies.
+  togetherSendNegativePrompt: read(process.env.TOGETHER_SEND_NEGATIVE_PROMPT) === '1',
   aiMaxDurationSeconds: isPositiveInt(process.env.AI_ROUTE_MAX_DURATION_SECONDS) ?? 60,
 
   upstashUrl: read(process.env.UPSTASH_REDIS_REST_URL),

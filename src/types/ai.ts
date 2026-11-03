@@ -37,7 +37,10 @@ export interface AiGenerateResponse {
 
 export interface ImageProvider {
   readonly name: string;
-  generate(prompt: string, opts: { signal?: AbortSignal }): Promise<GeneratedImage>;
+  generate(
+    prompt: string,
+    opts: { signal?: AbortSignal; negativePrompt?: string },
+  ): Promise<GeneratedImage>;
 }
 
 export const AI_ERROR_MESSAGES: Record<AiErrorCode, string> = {

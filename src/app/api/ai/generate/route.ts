@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getImageProvider } from '@/lib/ai/provider';
+import { BEAD_NEGATIVE_PROMPT, buildStyledPrompt } from '@/lib/ai/style';
 import { AiProviderError } from '@/lib/ai/together';
 import { MAX_PROMPT_LENGTH, MIN_PROMPT_LENGTH, checkPromptSafety, normalizePrompt } from '@/lib/ai/safety';
 import { clientIpHash, readSession } from '@/lib/auth/session';
@@ -77,7 +78,12 @@ export const POST = async (request: Request) => {
   const timeout = setTimeout(() => controller.abort(), Math.max(5_000, env.togetherTimeoutMs - 5_000));
 
   try {
-    const image = await provider.generate(prompt, { signal: controller.signal });
+    // The prompt is validated on what the user typed, then padded with the bead
+    // style terms so the render survives a 58 × 58 downsample.
+    const image = await provider.generate(buildStyledPrompt(prompt), {
+      signal: controller.signal,
+      negativePrompt: env.togetherSendNegativePrompt ? BEAD_NEGATIVE_PROMPT : undefined,
+    });
 
     const subjects = [
       session?.userId ? `user:${session.userId}` : null,

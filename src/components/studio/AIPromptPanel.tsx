@@ -109,7 +109,8 @@ export const AIPromptPanel = ({
       />
 
       <p className="mt-2 text-xs text-ink-muted">
-        {prompt.length}/400 characters. Avoid naming characters or artwork you do not have rights to
+        {prompt.length}/400 characters. Bead-ready style terms (flat colours, bold outlines, plain
+        background) are added for you. Avoid naming characters or artwork you do not have rights to
         use.
       </p>
 
