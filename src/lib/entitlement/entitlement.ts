@@ -3,10 +3,10 @@ import { getDb } from '@/lib/db';
 import { patternUnlocks, subscriptions } from '@/lib/db/schema';
 import { env, integrationStatus } from '@/lib/env';
 import { readUsage } from '@/lib/quota/aiQuota';
-import { FREE_MAX_GRID, PRO_MAX_GRID, GUEST_DAILY_AI_LIMIT } from '@/lib/plan';
+import { GUEST_DAILY_AI_LIMIT, MAX_GRID } from '@/lib/plan';
 import type { EntitlementStatus } from '@/types/entitlement';
 
-export { FREE_MAX_GRID, PRO_MAX_GRID };
+export { MAX_GRID };
 
 export interface ResolveInput {
   userId: string | null;
@@ -95,7 +95,7 @@ export const resolveEntitlement = async (input: ResolveInput): Promise<Entitleme
     aiRemaining: isPro ? null : remaining,
     aiUnlimited: isPro,
     canExportPdf: isPro || unlocked,
-    maxGrid: isPro ? PRO_MAX_GRID : FREE_MAX_GRID,
+    maxGrid: MAX_GRID,
     renewsAt: subscription?.renewsAt ?? null,
     source: isPro ? 'subscription' : unlocked ? 'unlock' : input.userId ? 'user' : 'anonymous',
     integrations,

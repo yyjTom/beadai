@@ -38,7 +38,9 @@ export const EntitlementCard = ({
           : `${remaining} free AI generations left today`}
     </p>
 
-    <p className="mt-2 text-sm text-ink-muted">Largest board: {maxGrid} × {maxGrid}</p>
+    <p className="mt-2 text-sm text-ink-muted">
+      Board size: up to {maxGrid} × {maxGrid} · free on every plan
+    </p>
 
     <div className="mt-5">
       {plan === 'pro' ? (

@@ -27,8 +27,8 @@ export const AIShowcase = () => (
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-ink-muted">
             Type a short prompt, get pixel-style art, and watch it become a bead chart with real
-            Perler and Artkal codes. Guests get three generations per day; Pro members get unlimited
-            generations plus large boards and printable PDFs.
+            Perler and Artkal codes. Guests get two generations per day; Pro members get unlimited
+            generations plus printable PDF charts and colour swapping.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-2">

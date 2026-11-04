@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { DENOISE_LEVELS, DENOISE_PROFILES } from '@/lib/color/denoise';
+import { MAX_GRID } from '@/lib/plan';
 import { GRID_PRESETS, estimatePegboards, type DenoiseLevel } from '@/types/pattern';
 import type { PaletteBrand } from '@/types/pattern';
 import { cn } from '@/lib/utils/cn';
@@ -115,7 +116,7 @@ export const GridControls = ({
             id="custom-size"
             type="range"
             min={15}
-            max={116}
+            max={MAX_GRID}
             step={1}
             value={width}
             onChange={(event) => applyCustom(Number(event.target.value))}
@@ -209,7 +210,7 @@ export const GridControls = ({
 
       {!canUseAdvanced ? (
         <Button variant="gradient" className="w-full" onClick={onUpgrade}>
-          Unlock 58 × 58, strong denoise and PDF export
+          Unlock unlimited AI, colour swap and printable PDFs
         </Button>
       ) : null}
     </div>

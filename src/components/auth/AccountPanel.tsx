@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { SubscribeButton } from '@/components/auth/SubscribeButton';
 import { useSession } from '@/hooks/useSession';
 import { useEntitlementPolling } from '@/hooks/useEntitlementPolling';
+import { GUEST_DAILY_AI_LIMIT } from '@/lib/plan';
 import type { EntitlementStatus } from '@/types/entitlement';
 
 const isPro = (status: EntitlementStatus | null): boolean =>
@@ -29,7 +30,7 @@ export const AccountPanel = () => {
     if (!status) return 'Loading…';
     if (status.aiUnlimited) return 'Unlimited AI generations';
     if (status.aiRemaining === null) return 'AI generation unavailable';
-    return `${status.aiRemaining} of 3 free AI generations left today`;
+    return `${status.aiRemaining} of ${GUEST_DAILY_AI_LIMIT} free AI generations left today`;
   };
 
   return (
@@ -67,7 +68,7 @@ export const AccountPanel = () => {
             {polling.phase === 'active' ? (
               <p className="flex items-center gap-2 text-sm font-semibold text-state-success">
                 <CheckCircle2 className="h-4 w-4" />
-                Pro is active. Unlimited AI, large boards and PDF exports are unlocked.
+                Pro is active. Unlimited AI, printable PDFs and colour swaps are unlocked.
               </p>
             ) : null}
 
@@ -107,7 +108,7 @@ export const AccountPanel = () => {
 
           <div className="rounded-3xl bg-cream-soft/70 p-5">
             <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-              Largest board
+              Board size
             </dt>
             <dd className="mt-2 text-lg font-bold text-ink">
               {status ? `${status.maxGrid} × ${status.maxGrid}` : '—'}

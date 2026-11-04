@@ -23,7 +23,7 @@ const SECTIONS = [
     id: 'accounts',
     heading: 'Your account',
     paragraphs: [
-      'You can use the pattern tool without an account. An account is required for larger grids, PDF export and a higher allowance of AI generations.',
+      'You can use the pattern tool without an account, at every board size. An account is required for PDF export, a higher allowance of AI generations and keeping your subscription across devices.',
       'You are responsible for keeping access to the mailbox you sign in with, since that is how sign-in links are delivered and how we identify your account.',
     ],
   },
@@ -32,7 +32,7 @@ const SECTIONS = [
     heading: 'Free use and Pro',
     paragraphs: [
       'Free use is limited: the smaller grid size, a daily allowance of AI generations, and no PDF export.',
-      'Pro is a subscription. It unlocks the larger grid, PDF export and unlimited AI generation for the period you have paid for.',
+      'Pro is a subscription. It unlocks printable PDF charts, colour swapping and unlimited AI generation for the period you have paid for.',
       'Prices and included features are shown on the pricing page at the time you subscribe.',
     ],
   },

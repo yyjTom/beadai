@@ -9,17 +9,17 @@ export interface PricingRow {
 }
 
 export const PRICING_ROWS: PricingRow[] = [
-  { label: '29 × 29 patterns', free: 'Unlimited', pro: 'Unlimited', included: true },
+  { label: 'Board size', free: 'Up to 116 × 116', pro: 'Up to 116 × 116', included: true },
   { label: 'PNG export', free: 'Included', pro: 'Included', included: true },
   { label: 'Photo uploads up to 10MB', free: 'Included', pro: 'Included', included: true },
   { label: 'Perler & Artkal colour matching', free: 'Included', pro: 'Included', included: true },
   { label: 'Denoise levels', free: 'Off & Light', pro: 'All four levels', included: true },
   { label: 'Shopping list with exact counts', free: 'Included', pro: 'Included', included: true },
   { label: 'Local history of recent patterns', free: 'Last 5 projects', pro: 'Last 5 projects', included: true },
-  { label: 'AI generations', free: '3 per day', pro: 'Unlimited', included: false },
-  { label: '58 × 58 and custom large boards', free: 'Locked', pro: 'Unlocked', included: false },
+  { label: 'AI generations', free: '2 per day', pro: 'Unlimited', included: false },
+  { label: 'Printable PDF chart', free: '$1.99 per pattern', pro: 'Included', included: false },
+  { label: 'Board-by-board PDF pages', free: '$1.99 per pattern', pro: 'Included', included: false },
   { label: 'Colour swap with undo', free: 'Locked', pro: 'Unlocked', included: false },
-  { label: 'Printable high-resolution PDF', free: 'Locked', pro: 'Unlocked', included: false },
 ];
 
 export const PricingTable = ({ className }: { className?: string }) => (

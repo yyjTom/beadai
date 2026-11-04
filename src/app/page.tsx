@@ -19,7 +19,7 @@ const faqSchema = {
       name: 'Do I need an account to generate a bead pattern?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'No. Uploading a photo and building a 58 x 58 pattern works without signing in. An account is needed for a Pro subscription, unlimited AI generations, or recovering a subscription on another device.',
+        text: 'No. Uploading a photo and building a pattern up to 116 x 116 works without signing in. An account is needed for a Pro subscription, a single-pattern PDF unlock, unlimited AI generations, or recovering a subscription on another device.',
       },
     },
     {
@@ -27,7 +27,7 @@ const faqSchema = {
       name: 'How many free AI generations do I get?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Visitors get three AI generations per day, enforced on the server. Pro members get unlimited generations.',
+        text: 'Visitors get two AI generations per day, enforced on the server. Pro members get unlimited generations.',
       },
     },
     {

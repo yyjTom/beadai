@@ -41,7 +41,7 @@ export const env = {
   upstashUrl: read(process.env.UPSTASH_REDIS_REST_URL),
   upstashToken: read(process.env.UPSTASH_REDIS_REST_TOKEN),
 
-  guestDailyAiLimit: isPositiveInt(process.env.GUEST_DAILY_AI_LIMIT) ?? 3,
+  guestDailyAiLimit: isPositiveInt(process.env.GUEST_DAILY_AI_LIMIT) ?? 2,
 
   dodoApiKey: read(process.env.DODO_PAYMENTS_API_KEY),
   dodoWebhookKey: read(process.env.DODO_PAYMENTS_WEBHOOK_KEY),

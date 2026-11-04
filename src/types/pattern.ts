@@ -54,30 +54,23 @@ export const EMPTY_CELL = '__empty__';
 
 export const GRID_PRESETS = [
   {
-    key: 'starter',
-    width: 29,
-    height: 29,
-    label: '29 × 29',
-    hint: 'Great for beginners; fits one standard pegboard.',
-  },
-  {
-    key: 'detailed',
-    width: 58,
-    height: 58,
-    label: '58 × 58',
-    hint: 'Four times the detail; requires four standard pegboards.',
+    key: 'standard',
+    width: 50,
+    height: 50,
+    label: '50 × 50',
+    hint: 'Free · four standard pegboards.',
   },
   {
     key: 'wall',
     width: 116,
     height: 116,
     label: '116 × 116',
-    hint: 'Poster-scale detail; sixteen standard pegboards.',
+    hint: 'Free · poster scale, sixteen pegboards.',
   },
 ] as const;
 
-/** Board size a new session starts on. 29 × 29 is too coarse to read a subject. */
-export const DEFAULT_GRID = 58;
+/** Board size a new session starts on. 50 × 50 reads a subject without a wall. */
+export const DEFAULT_GRID = 50;
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 

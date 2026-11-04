@@ -5,15 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { BeadChartCanvas } from '@/components/studio/BeadChartCanvas';
 import { UploadDropzone } from '@/components/studio/UploadDropzone';
 import { usePatternWorker } from '@/hooks/usePatternWorker';
-import { useSession } from '@/hooks/useSession';
-import { findPaletteColor } from '@/lib/color/palettes';
 import { cacheHandoffImage } from '@/lib/storage/handoff';
-import { FREE_MAX_GRID } from '@/lib/plan';
 import {
-  EMPTY_CELL,
+  DEFAULT_GRID,
   estimatePegboards,
   type DenoiseLevel,
   type PatternResult,
@@ -22,10 +19,12 @@ import type { PaletteBrand } from '@/types/pattern';
 import { loadImageDataFromUrl, type LoadedImage } from '@/lib/utils/image';
 import { cn } from '@/lib/utils/cn';
 
-const SIZE_OPTIONS = [
-  { width: 29, height: 29, label: '29 × 29', hint: 'one pegboard' },
-  { width: 58, height: 58, label: '58 × 58', hint: 'four pegboards' },
-] as const;
+/**
+ * The homepage previews exactly one board size: the free default. Offering a
+ * second option here only pushed visitors into a size picker before they had
+ * seen a single bead.
+ */
+const PREVIEW_GRID = DEFAULT_GRID;
 
 const BRAND_OPTIONS: Array<{ value: PaletteBrand; label: string }> = [
   { value: 'perler', label: 'Perler' },
@@ -40,21 +39,14 @@ const SAMPLE_IMAGES = [
 
 export const InstantPreview = () => {
   const { generate, busy } = usePatternWorker();
-  const { entitlement } = useSession();
 
   const [image, setImage] = useState<LoadedImage | null>(null);
-  // Start on 58 × 58: it is free, and 29 × 29 is too coarse to show real detail.
-  const [sizeIndex, setSizeIndex] = useState(1);
   const [brand, setBrand] = useState<PaletteBrand>('perler');
   const [denoiseLevel] = useState<DenoiseLevel>(1);
   const [pattern, setPattern] = useState<PatternResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [handoffReady, setHandoffReady] = useState(false);
-  const [showCodes, setShowCodes] = useState(false);
   const [sampleLoading, setSampleLoading] = useState<string | null>(null);
-
-  const maxGrid = entitlement?.maxGrid ?? FREE_MAX_GRID;
-  const size = SIZE_OPTIONS[sizeIndex];
 
   useEffect(() => {
     if (!image) {
@@ -67,8 +59,8 @@ export const InstantPreview = () => {
     const timer = setTimeout(() => {
       generate({
         source: { width: image.width, height: image.height, data: image.data },
-        width: size.width,
-        height: size.height,
+        width: PREVIEW_GRID,
+        height: PREVIEW_GRID,
         brand,
         denoiseLevel,
       })
@@ -86,7 +78,7 @@ export const InstantPreview = () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [image, size.width, size.height, brand, denoiseLevel, generate]);
+  }, [image, brand, denoiseLevel, generate]);
 
   const handleLoaded = useCallback((next: LoadedImage) => {
     setImage(next);
@@ -120,8 +112,6 @@ export const InstantPreview = () => {
   }, []);
 
   const topColors = useMemo(() => (pattern ? pattern.usage.slice(0, 8) : []), [pattern]);
-  const codesAvailable = Boolean(pattern && pattern.width <= 40);
-  const codeFontSize = pattern ? Math.max(6, Math.round(190 / pattern.width)) : 7;
   const boards = pattern ? estimatePegboards(pattern.width, pattern.height) : 0;
 
   const sampleRow = (
@@ -191,33 +181,23 @@ export const InstantPreview = () => {
           {sampleRow}
 
           <div className="rounded-[2rem] border border-black/5 bg-white/90 p-5 shadow-soft">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Size</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {SIZE_OPTIONS.map((option, index) => {
-                const locked = option.width > maxGrid;
-                return (
-                  <button
-                    key={option.label}
-                    type="button"
-                    disabled={locked}
-                    onClick={() => setSizeIndex(index)}
-                    className={cn(
-                      'rounded-2xl border px-4 py-2 text-left text-sm font-semibold transition focus-ring',
-                      locked
-                        ? 'cursor-not-allowed border-black/5 bg-cream-soft text-ink-muted'
-                        : sizeIndex === index
-                          ? 'border-bead-violet bg-white text-ink shadow-soft'
-                          : 'border-black/5 bg-white/70 text-ink-muted hover:border-ink/20',
-                    )}
-                  >
-                    {option.label}
-                    <span className="block text-xs font-normal text-ink-muted">
-                      {locked ? 'Pro only' : option.hint}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Size</p>
+              <span className="text-sm font-bold text-ink">
+                {PREVIEW_GRID} × {PREVIEW_GRID}
+              </span>
             </div>
+            <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+              Every size is free. This preview runs at {PREVIEW_GRID} × {PREVIEW_GRID} — about{' '}
+              {estimatePegboards(PREVIEW_GRID, PREVIEW_GRID)} standard pegboards.
+            </p>
+            <Link
+              href="/studio"
+              className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-bead-violet hover:underline focus-ring"
+            >
+              Need bigger? Open the studio
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
 
             <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-ink-muted">
               Brand
@@ -260,19 +240,6 @@ export const InstantPreview = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <label
-                    className={cn(
-                      'flex items-center gap-2 text-xs font-semibold',
-                      codesAvailable ? 'text-ink-muted' : 'text-ink/40',
-                    )}
-                  >
-                    <Switch
-                      checked={showCodes && codesAvailable}
-                      onCheckedChange={setShowCodes}
-                      disabled={!codesAvailable}
-                    />
-                    Codes
-                  </label>
                   {busy ? <Loader2 className="h-5 w-5 animate-spin text-bead-violet" /> : null}
                 </div>
               </div>
@@ -292,39 +259,11 @@ export const InstantPreview = () => {
 
                 <div className="overflow-hidden rounded-3xl bg-cream-soft/70 p-4">
                   {pattern ? (
-                    <div
-                      className={cn('mx-auto w-full max-w-[420px]', busy && 'opacity-60')}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: `repeat(${pattern.width}, minmax(0, 1fr))`,
-                        gap: '1px',
-                      }}
-                    >
-                      {pattern.cells.map((colorId, index) => {
-                        const color = findPaletteColor(brand, colorId);
-                        const isEmpty = colorId === EMPTY_CELL;
-                        const rgb = color ? color.rgb : [255, 255, 255];
-
-                        return (
-                          <span
-                            key={index}
-                            className="bead-dot flex items-center justify-center"
-                            style={{
-                              aspectRatio: '1 / 1',
-                              background: isEmpty
-                                ? 'transparent'
-                                : `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.55), transparent 46%), rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`,
-                              fontSize: codeFontSize,
-                              fontWeight: 700,
-                              lineHeight: 1,
-                              color: 'rgba(43,42,41,0.8)',
-                            }}
-                          >
-                            {showCodes && codesAvailable && color ? color.code : null}
-                          </span>
-                        );
-                      })}
-                    </div>
+                    <BeadChartCanvas
+                      pattern={pattern}
+                      brand={brand}
+                      className={cn('max-w-[420px]', busy && 'opacity-60')}
+                    />
                   ) : (
                     <div className="grid h-[320px] w-full place-items-center text-sm text-ink-muted">
                       Your mosaic appears here.
@@ -332,6 +271,9 @@ export const InstantPreview = () => {
                   )}
                   <p className="mt-3 text-center text-xs font-semibold text-ink-muted">
                     Bead chart
+                  </p>
+                  <p className="mt-1 text-center text-[11px] leading-relaxed text-ink-muted">
+                    Colour codes appear in the studio and in the exported chart.
                   </p>
                 </div>
               </div>

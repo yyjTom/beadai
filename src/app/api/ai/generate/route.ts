@@ -79,7 +79,7 @@ export const POST = async (request: Request) => {
 
   try {
     // The prompt is validated on what the user typed, then padded with the bead
-    // style terms so the render survives a 58 × 58 downsample.
+    // style terms so the render survives a 50 × 50 downsample.
     const image = await provider.generate(buildStyledPrompt(prompt), {
       signal: controller.signal,
       negativePrompt: env.togetherSendNegativePrompt ? BEAD_NEGATIVE_PROMPT : undefined,

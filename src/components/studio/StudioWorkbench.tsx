@@ -31,7 +31,7 @@ import {
   type PatternSwapMap,
 } from '@/types/pattern';
 import type { PaletteBrand } from '@/types/pattern';
-import { FREE_MAX_GRID } from '@/lib/plan';
+import { MAX_GRID } from '@/lib/plan';
 
 const STEPS = ['Source', 'Pattern', 'Export'];
 
@@ -68,7 +68,7 @@ export const StudioWorkbench = () => {
 
   const signedIn = Boolean(session?.signedIn);
   const isPro = Boolean(entitlement?.plan === 'pro' && entitlement.active);
-  const maxGrid = entitlement?.maxGrid ?? FREE_MAX_GRID;
+  const maxGrid = entitlement?.maxGrid ?? MAX_GRID;
 
   const pattern = useMemo(
     () => (basePattern ? resolvePattern(basePattern, swapMap, brand) : null),

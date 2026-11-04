@@ -11,7 +11,7 @@ import { FinalCta } from '@/components/marketing/FinalCta';
 export const metadata: Metadata = {
   title: 'Pricing',
   description:
-    'Free 58 × 58 bead patterns and shopping lists. Pro unlocks unlimited AI generations, 116 × 116 boards, colour swaps and printable PDF charts.',
+    'Every board size is free — up to 116 × 116 — with PNG export and a shopping list. Pro adds printable PDF charts with numbered board pages, unlimited AI and colour swaps.',
   alternates: { canonical: '/pricing' },
 };
 
@@ -34,14 +34,14 @@ const PLAN_CARDS: Array<{
     name: 'Free',
     price: '$0',
     cadence: 'forever',
-    summary: 'Everything you need for a first sprite on one pegboard.',
+    summary: 'The whole builder, at every board size, with PNG export.',
     features: [
-      'Unlimited 58 × 58 patterns — 3,364 beads of detail',
+      'Free at every size — up to 116 × 116 and 13,456 beads',
       'Photo uploads up to 10MB',
       'Perler & Artkal colour matching',
       'Shopping list with exact counts',
-      'PNG export for 58 × 58 boards',
-      '3 AI generations per day',
+      'PNG export with a branded colour summary',
+      '2 AI generations per day',
     ],
     cta: { label: 'Open the studio', href: '/studio' },
   },
@@ -50,13 +50,13 @@ const PLAN_CARDS: Array<{
     name: 'Pro',
     price: '$4.99',
     cadence: 'per month',
-    summary: 'For makers who publish patterns, run shops, or build big pieces.',
+    summary: 'For makers who print their charts and build big pieces.',
     features: [
       'Unlimited AI generations',
-      '116 × 116 and custom large boards',
-      'All four denoise levels',
+      'Printable PDF charts — one numbered page per pegboard',
+      'Every grid size included, same as Free',
       'Colour swap with undo',
-      'Printable high-resolution PDF charts',
+      'All four denoise levels',
     ],
     cta: { label: 'Subscribe to Pro', plan: 'pro-monthly' as const },
     highlight: true,
@@ -69,10 +69,10 @@ const PLAN_CARDS: Array<{
     summary: 'The same Pro access, billed once a year — about two months free.',
     features: [
       'Unlimited AI generations',
-      '116 × 116 and custom large boards',
-      'All four denoise levels',
+      'Printable PDF charts — one numbered page per pegboard',
+      'Every grid size included, same as Free',
       'Colour swap with undo',
-      'Printable high-resolution PDF charts',
+      'All four denoise levels',
     ],
     cta: { label: 'Subscribe yearly', plan: 'pro-yearly' as const },
   },
@@ -85,8 +85,8 @@ const PLAN_CARDS: Array<{
     features: [
       'Everything in Pro, forever',
       'Unlimited AI generations',
-      '116 × 116 and custom large boards',
-      'Printable high-resolution PDF charts',
+      'Printable PDF charts — one numbered page per pegboard',
+      'Colour swap and all four denoise levels',
       'One-time payment, never renews',
     ],
     cta: { label: 'Buy Pro once', plan: 'pro-lifetime' as const },
@@ -100,11 +100,11 @@ export default function PricingPage() {
         <div className="mx-auto max-w-3xl text-center">
           <Badge variant="violet">Pricing</Badge>
           <h1 className="mt-5 text-4xl font-bold text-ink sm:text-5xl">
-            Start free, upgrade when your ideas outgrow one board
+            Every board size is free. Pay only when you print.
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-ink-muted">
-            beadai keeps the first board free forever. Pro removes the daily AI cap and opens large
-            boards, colour swapping and printable charts.
+            Build up to 116 × 116 and export the PNG at no cost. Pro adds printable PDF charts with
+            one numbered page per pegboard, unlimited AI generations and colour swapping.
           </p>
         </div>
 
@@ -158,8 +158,8 @@ export default function PricingPage() {
         <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-ink-muted">
           Payments are processed by Dodo Payments. Subscriptions cancel any time from your account
           page and continue until the end of the current billing period. Pro once is a single
-          payment and never renews. Need just one chart? You can unlock a single pattern for
-          $1.99 from the studio instead.
+          payment and never renews. Need to print just one chart? Unlock the printable PDF for a
+          single pattern for $1.99 from the studio.
         </p>
       </section>
 

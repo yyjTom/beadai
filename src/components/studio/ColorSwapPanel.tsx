@@ -3,7 +3,8 @@
 import { Undo2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { rankedPaletteMatches } from '@/lib/color/match';
+import { COLOR_FAMILY_LABELS, colorFamily } from '@/lib/color/family';
+import { groupedPaletteMatches } from '@/lib/color/match';
 import { findPaletteColor } from '@/lib/color/palettes';
 import { resetSwap, withSwap } from '@/lib/color/swap';
 import type { PaletteBrand, PatternSwapMap } from '@/types/pattern';
@@ -27,7 +28,8 @@ export const ColorSwapPanel = ({
   const source = selectedColorId ? findPaletteColor(brand, selectedColorId) : null;
   const currentTargetId = selectedColorId ? (swapMap[selectedColorId] ?? null) : null;
   const currentTarget = currentTargetId ? findPaletteColor(brand, currentTargetId) : null;
-  const matches = selectedColorId ? rankedPaletteMatches(selectedColorId, brand, 18) : [];
+  const groups = selectedColorId ? groupedPaletteMatches(selectedColorId, brand) : [];
+  const ownFamily = source ? colorFamily(source.rgb) : null;
 
   return (
     <div className="rounded-3xl border border-black/5 bg-white/85 p-5 shadow-soft">
@@ -76,25 +78,38 @@ export const ColorSwapPanel = ({
           ) : (
             <>
               <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                Closest matches
+                Same family first
               </p>
-              <div className="mt-3 grid grid-cols-6 gap-2">
-                {matches.map((color) => {
-                  const active = currentTargetId === color.id;
-                  return (
-                    <button
-                      key={color.id}
-                      type="button"
-                      title={`${color.code} · ${color.name}`}
-                      onClick={() => onChange(withSwap(swapMap, source.id, color.id))}
-                      className={cn(
-                        'bead-dot h-9 w-9 border-2 border-transparent focus-ring',
-                        active && 'border-bead-violet',
-                      )}
-                      style={{ background: `rgb(${color.rgb.join(', ')})` }}
-                    />
-                  );
-                })}
+              <div className="mt-3 space-y-4">
+                {groups.map((group) => (
+                  <div key={group.family}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
+                      {group.family === ownFamily
+                        ? `Same family · ${COLOR_FAMILY_LABELS[group.family]}`
+                        : COLOR_FAMILY_LABELS[group.family]}
+                    </p>
+                    <div className="mt-2 grid grid-cols-6 gap-2">
+                      {group.colors.map((color) => {
+                        const active = currentTargetId === color.id;
+                        return (
+                          <button
+                            key={color.id}
+                            type="button"
+                            title={`${color.code} · ${color.name}`}
+                            aria-label={`${color.code} ${color.name}`}
+                            aria-pressed={active}
+                            onClick={() => onChange(withSwap(swapMap, source.id, color.id))}
+                            className={cn(
+                              'bead-dot h-9 w-9 border-2 border-transparent focus-ring',
+                              active && 'border-bead-violet',
+                            )}
+                            style={{ background: `rgb(${color.rgb.join(', ')})` }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {currentTarget ? (

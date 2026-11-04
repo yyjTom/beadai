@@ -1,5 +1,5 @@
 /**
- * Every AI image is destined for a 58 × 58 bead grid, so the prompt is padded
+ * Every AI image is destined for a 50 × 50 bead grid, so the prompt is padded
  * with style terms that survive downsampling: flat fills, few distinct colours,
  * bold outlines and a plain background. Without them a photo-real render turns
  * into mud once 3,364 cells average it out, and the shopping list explodes into

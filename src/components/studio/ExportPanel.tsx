@@ -81,7 +81,7 @@ export const ExportPanel = ({
 
       <p className="mt-2 text-xs leading-relaxed text-ink-muted">
         A high-resolution PDF with a clean grid, tiny colour codes in every cell, and the full
-        shopping list on a second page.
+        shopping list. Boards past 58 × 58 also get one numbered page per standard pegboard.
       </p>
 
       <div className="mt-5 space-y-3">
@@ -154,8 +154,8 @@ export const ExportPanel = ({
 
       {canExportPng && !canExport ? (
         <p className="mt-3 text-xs text-ink-muted">
-          PNG export is free inside your board size. PDF charts and larger boards are part of
-          Pro.
+          PNG export is free at any size. Printable PDFs — including the board-by-board pages —
+          come with Pro, or a $1.99 unlock for this one pattern.
         </p>
       ) : null}
     </div>

@@ -1,3 +1,4 @@
+import { colorFamily, type ColorFamily } from '@/lib/color/family';
 import { deltaE76, rgbToLab, type Lab } from '@/lib/color/lab';
 import { PALETTES } from '@/lib/color/palettes';
 import type { PaletteBrand, PaletteColor } from '@/types/pattern';
@@ -68,4 +69,57 @@ export const rankedPaletteMatches = (
     .sort((a, b) => a.delta - b.delta)
     .slice(0, limit)
     .map((entry) => entry.color);
+};
+
+export interface ColorFamilyGroup {
+  family: ColorFamily;
+  colors: PaletteColor[];
+}
+
+/**
+ * Alternatives grouped by colour family, so swapping a shade stays inside the
+ * family the user is working in. The source family comes first with a deeper
+ * list; the rest are ordered by how close their best match is.
+ */
+export const groupedPaletteMatches = (
+  sourceId: string,
+  brand: PaletteBrand,
+  options: { perFamily?: number; sourceFamilyLimit?: number; maxFamilies?: number } = {},
+): ColorFamilyGroup[] => {
+  const { perFamily = 4, sourceFamilyLimit = 8, maxFamilies = 4 } = options;
+  const { colors, labs } = getPaletteIndex(brand);
+  const sourceIndex = colors.findIndex((color) => color.id === sourceId);
+  if (sourceIndex < 0) return [];
+
+  const sourceLab = labs[sourceIndex];
+  const ownFamily = colorFamily(colors[sourceIndex].rgb);
+
+  const buckets = new Map<ColorFamily, Array<{ color: PaletteColor; delta: number }>>();
+  colors.forEach((color, index) => {
+    if (color.id === sourceId) return;
+    const family = colorFamily(color.rgb);
+    const entry = { color, delta: deltaE76(sourceLab, labs[index]) };
+    const bucket = buckets.get(family);
+    if (bucket) bucket.push(entry);
+    else buckets.set(family, [entry]);
+  });
+
+  return Array.from(buckets.entries())
+    .map(([family, entries]) => ({
+      family,
+      entries: entries.sort((a, b) => a.delta - b.delta),
+    }))
+    .sort((a, b) => {
+      if (a.family === ownFamily) return -1;
+      if (b.family === ownFamily) return 1;
+      return a.entries[0].delta - b.entries[0].delta;
+    })
+    .slice(0, maxFamilies)
+    .map(({ family, entries }) => ({
+      family,
+      colors: entries
+        .slice(0, family === ownFamily ? sourceFamilyLimit : perFamily)
+        .map((entry) => entry.color),
+    }))
+    .filter((group) => group.colors.length > 0);
 };
