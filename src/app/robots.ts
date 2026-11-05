@@ -3,7 +3,7 @@ import { canonicalUrl } from '@/lib/env';
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [{ userAgent: '*', allow: '/', disallow: ['/api/', '/account'] }],
+    rules: [{ userAgent: '*', allow: '/', disallow: ['/api/', '/account', '/admin'] }],
     sitemap: canonicalUrl('/sitemap.xml'),
   };
 }
