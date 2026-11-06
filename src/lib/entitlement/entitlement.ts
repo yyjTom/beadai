@@ -1,4 +1,4 @@
-import { and, eq, gt, isNull, or } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNull, or } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { patternUnlocks, subscriptions } from '@/lib/db/schema';
 import { env, integrationStatus } from '@/lib/env';
@@ -17,6 +17,13 @@ export interface ResolveInput {
 
 const ACTIVE_STATUSES = ['active', 'renewed', 'trialing'];
 
+/**
+ * Providers whose active rows mean Pro. Admin grants are written with
+ * provider 'admin' (see /api/admin/grant), so filtering on 'dodo' alone would
+ * silently ignore every manually granted subscription.
+ */
+const PRO_PROVIDERS = ['dodo', 'admin'];
+
 export const resolveSubscription = async (
   userId: string,
 ): Promise<{ plan: 'pro'; renewsAt: string | null } | null> => {
@@ -32,7 +39,7 @@ export const resolveSubscription = async (
     .where(
       and(
         eq(subscriptions.userId, userId),
-        eq(subscriptions.provider, 'dodo'),
+        inArray(subscriptions.provider, PRO_PROVIDERS),
         or(
           ...ACTIVE_STATUSES.map((status) => eq(subscriptions.status, status)),
           and(isNull(subscriptions.canceledAt), gt(subscriptions.currentPeriodEnd, new Date())),
