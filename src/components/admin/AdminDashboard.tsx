@@ -49,6 +49,22 @@ interface Overview {
   }>;
 }
 
+interface UserRow {
+  id: string;
+  email: string;
+  createdAt: string;
+  lastLoginAt: string | null;
+  pro: boolean;
+  aiToday: number;
+}
+
+interface UserListData {
+  users: UserRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 const formatDate = (value: string | null): string =>
   value ? new Date(value).toLocaleString() : '—';
 
@@ -77,6 +93,9 @@ export const AdminDashboard = () => {
   const email = session?.user?.email ?? null;
 
   const [overview, setOverview] = useState<Overview | null>(null);
+  const [userList, setUserList] = useState<UserListData | null>(null);
+  const [listQuery, setListQuery] = useState('');
+  const [listLoading, setListLoading] = useState(false);
   const [lookupEmail, setLookupEmail] = useState('');
   const [userView, setUserView] = useState<UserView | null>(null);
   const [patternHash, setPatternHash] = useState('');
@@ -92,9 +111,27 @@ export const AdminDashboard = () => {
     }
   }, []);
 
+  const loadUsers = useCallback(async (query: string, page: number) => {
+    setListLoading(true);
+    try {
+      const response = await fetch(
+        `/api/admin/users?page=${page}&q=${encodeURIComponent(query)}`,
+        { cache: 'no-store' },
+      );
+      if (response.ok) setUserList((await response.json()) as UserListData);
+    } catch {
+      // Keep the previous list; network hiccups are not worth a banner here.
+    } finally {
+      setListLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (isAdminEmail(email)) void loadOverview();
-  }, [email, loadOverview]);
+    if (isAdminEmail(email)) {
+      void loadOverview();
+      void loadUsers('', 1);
+    }
+  }, [email, loadOverview, loadUsers]);
 
   const lookup = useCallback(
     async (target: string) => {
@@ -248,6 +285,118 @@ export const AdminDashboard = () => {
             Loading stats…
           </p>
         )}
+      </section>
+
+      <section className="rounded-[2.5rem] border border-black/5 bg-white/85 p-6 shadow-soft sm:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-bold text-ink">Accounts</h2>
+          <form
+            className="flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void loadUsers(listQuery, 1);
+            }}
+          >
+            <Input
+              value={listQuery}
+              onChange={(event) => setListQuery(event.target.value)}
+              placeholder="Search email…"
+              type="search"
+              aria-label="Search accounts"
+              className="w-56"
+            />
+            <Button type="submit" size="sm" variant="outline" disabled={listLoading}>
+              <Search className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="text-ink-muted">
+              <tr>
+                <th className="py-2 pr-4 font-semibold">Email</th>
+                <th className="py-2 pr-4 font-semibold">Plan</th>
+                <th className="py-2 pr-4 font-semibold">AI today</th>
+                <th className="py-2 pr-4 font-semibold">Joined</th>
+                <th className="py-2 font-semibold">Last login</th>
+              </tr>
+            </thead>
+            <tbody className="text-ink">
+              {(userList?.users ?? []).map((row) => (
+                <tr
+                  key={row.id}
+                  className="cursor-pointer border-t border-black/5 hover:bg-cream-soft/60"
+                  onClick={() => {
+                    setLookupEmail(row.email);
+                    void lookup(row.email);
+                  }}
+                  title="Open this account in the panel below"
+                >
+                  <td className="max-w-[240px] truncate py-2 pr-4 font-semibold">{row.email}</td>
+                  <td className="py-2 pr-4">
+                    {row.pro ? (
+                      <Badge variant="violet">Pro</Badge>
+                    ) : (
+                      <Badge variant="neutral">Free</Badge>
+                    )}
+                  </td>
+                  <td className="py-2 pr-4">{row.aiToday}</td>
+                  <td className="py-2 pr-4">{formatDate(row.createdAt)}</td>
+                  <td className="py-2">{formatDate(row.lastLoginAt)}</td>
+                </tr>
+              ))}
+              {userList && userList.users.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-3 text-ink-muted">
+                    No accounts match that search.
+                  </td>
+                </tr>
+              ) : null}
+              {!userList ? (
+                <tr>
+                  <td colSpan={5} className="py-3 text-ink-muted">
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Loading accounts…
+                    </span>
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+
+        {userList ? (
+          <div className="mt-3 flex items-center justify-between text-xs text-ink-muted">
+            <span>
+              {userList.total} account(s) · page {userList.page} of{' '}
+              {Math.max(1, Math.ceil(userList.total / userList.pageSize))}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={listLoading || userList.page <= 1}
+                onClick={() => {
+                  void loadUsers(listQuery, userList.page - 1);
+                }}
+              >
+                Prev
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={listLoading || userList.page >= Math.ceil(userList.total / userList.pageSize)}
+                onClick={() => {
+                  void loadUsers(listQuery, userList.page + 1);
+                }}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section className="rounded-[2.5rem] border border-black/5 bg-white/85 p-6 shadow-soft sm:p-8">

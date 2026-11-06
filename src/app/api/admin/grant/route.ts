@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import {
-  adminBadRequest,
-  adminUnavailable,
-  requireAdminSession,
-} from '@/lib/admin';
+import { and, desc, eq, inArray } from 'drizzle-orm';
+import { adminBadRequest, adminUnavailable, requireAdminSession } from '@/lib/admin';
 import { findUserByEmail, isValidEmail } from '@/lib/auth/account';
 import { getDb } from '@/lib/db';
 import { subscriptions } from '@/lib/db/schema';
@@ -23,8 +20,12 @@ const DURATION_DAYS: Record<Exclude<Duration, 'lifetime'>, number> = {
 /**
  * Grants Pro by writing an `admin`-provider subscription row. The entitlement
  * resolver treats any active row as Pro, so this needs no schema change.
- * Dodo-managed subscriptions are never touched here — cancelling those happens
- * in the Dodo dashboard.
+ *
+ * The grant is idempotent: a user keeps exactly one active admin row. Re-grant
+ * updates that row (e.g. 1m → lifetime) and any stray duplicates left over from
+ * earlier versions are cancelled, so the ledger stays readable.
+ * Dodo-managed subscriptions are never touched — cancelling those happens in
+ * the Dodo dashboard.
  */
 export const POST = async (request: Request) => {
   const guard = await requireAdminSession();
@@ -54,9 +55,21 @@ export const POST = async (request: Request) => {
   const currentPeriodEnd =
     duration === 'lifetime' ? null : new Date(Date.now() + DURATION_DAYS[duration] * 86_400_000);
 
-  const inserted = await db
-    .insert(subscriptions)
-    .values({
+  const activeRows = await db
+    .select({ id: subscriptions.id })
+    .from(subscriptions)
+    .where(
+      and(
+        eq(subscriptions.userId, user.id),
+        eq(subscriptions.provider, 'admin'),
+        inArray(subscriptions.status, ['active', 'renewed', 'trialing']),
+      ),
+    )
+    .orderBy(desc(subscriptions.createdAt));
+
+  let mode: 'created' | 'updated';
+  if (activeRows.length === 0) {
+    await db.insert(subscriptions).values({
       id: newId(),
       userId: user.id,
       provider: 'admin',
@@ -65,8 +78,27 @@ export const POST = async (request: Request) => {
       planKey: `admin-${duration}`,
       currentPeriodEnd,
       canceledAt: null,
-    })
-    .returning({ id: subscriptions.id, currentPeriodEnd: subscriptions.currentPeriodEnd });
+    });
+    mode = 'created';
+  } else {
+    await db
+      .update(subscriptions)
+      .set({
+        planKey: `admin-${duration}`,
+        currentPeriodEnd,
+        canceledAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(subscriptions.id, activeRows[0].id));
+
+    if (activeRows.length > 1) {
+      await db
+        .update(subscriptions)
+        .set({ status: 'cancelled', canceledAt: new Date(), updatedAt: new Date() })
+        .where(inArray(subscriptions.id, activeRows.slice(1).map((row) => row.id)));
+    }
+    mode = 'updated';
+  }
 
   // Re-read through the real resolver so the UI reflects what the user gets.
   const entitlement = await resolveSubscription(user.id);
@@ -74,8 +106,8 @@ export const POST = async (request: Request) => {
   return NextResponse.json(
     {
       granted: true,
+      mode,
       duration,
-      row: inserted[0] ?? null,
       proNow: Boolean(entitlement),
       renewsAt: entitlement?.renewsAt ?? null,
     },
